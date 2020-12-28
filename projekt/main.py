@@ -1,3 +1,10 @@
+"""
+from projekt.Polygon_class import Polygon
+from projekt.Vertex_class import Vertex
+from projekt.Point_class import Point
+from projekt.Triangle_class import Triangle
+"""
+
 # Narzędzie jest oparte o kilka zewnętrznych bibliotek, które potrzebujemy najpierw zaimportować.
 import numpy as np
 import matplotlib.pyplot as plt
@@ -285,8 +292,3 @@ class Plot:
         self.callback.draw(autoscaling=autoscaling, plot_range=plot_range)
 
 
-if __name__ == "__main__":
-    plot = Plot(points=[PointsCollection([(1, 2), (3, 1.5), (2, -1)]),
-                        PointsCollection([(5, -2), (2, 2), (-2, -1)], color='green', marker="^")],
-                lines=[LinesCollection([[(1, 2), (2, 3)], [(0, 1), (1, 0)]])])
-    plot.draw()

@@ -1,6 +1,7 @@
 from projekt.Vertex_class import *
 from projekt.Point_class import *
 from projekt.Triangle_class import *
+from projekt.main import *
 
 class Polygon:
     def __init__(self, vertices): #wierzchołki są zadawane w lewa strone
@@ -9,6 +10,12 @@ class Polygon:
         self.top_point_index = self.__top_point() #index
         self.triangles = set()
         self.chain = self.__get_chain()
+        self.scenes = [] #puste
+        self.sides = []
+        for i in range(len(self.vertices)):
+            self.sides.append([(self.vertices[i].point.x, self.vertices[i].point.y),
+                               (self.vertices[(i + 1) % len(self.vertices)].point.x,
+                                self.vertices[(i + 1) % len(self.vertices)].point.y)])
 
     def __sorted_vertices(self, vertices):
         index = 0
@@ -32,7 +39,7 @@ class Polygon:
                 index = i
         return index
 
-    def __get__chain(self):
+    def __get_chain(self):
         C = [1 for _ in range(len(self.vertices))]
         i = 0
         while self.vertices[i] != self.vertices[self.top_point_index]:
@@ -93,6 +100,12 @@ class Polygon:
                     continue
             else:  # prawidlowy
                 classification["prawidlowe"].append(q)
+        self.scenes.append(Scene(points= [PointsCollection([(p.x,p.y) for p in classification['poczatkowe']], color = 'limegreen'),
+                                          PointsCollection([(p.x,p.y) for p in classification['koncowe']], color = 'red'),
+                                          PointsCollection([(p.x,p.y) for p in classification['laczace']], color = 'mediumblue'),
+                                          PointsCollection([(p.x,p.y) for p in classification['dzielace']], color = 'lightsteelblue'),
+                                          PointsCollection([(p.x,p.y) for p in classification['prawidlowe']], color = 'sienna')],
+                                 lines = [LinesCollection(self.sides)]))
 
     def __triangulate(self):
         if not self.__is_y_monotone():
@@ -131,3 +144,6 @@ class Polygon:
                     self.add_triangle(V[i][0], V[S[-1]][0], V[S[-2]][0])
                     S.pop() #v
                 S = [ve, i]
+
+    def actions(self):
+        self.__classify_vertices()
