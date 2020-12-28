@@ -9,3 +9,6 @@ class Point:
     def __hash__(self):
         return hash((self.x, self.y))
 
+    @staticmethod
+    def det(p, q, r):
+        return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)

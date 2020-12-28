@@ -14,5 +14,6 @@ class Triangle:
         h = list(self.vertices)
         return hash((h[0], h[1], h[2]))
 
+    @property
     def is_leaf(self):
         return self.polygon is not None
