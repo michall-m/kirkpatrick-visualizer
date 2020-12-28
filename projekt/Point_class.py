@@ -12,3 +12,13 @@ class Point:
     @staticmethod
     def det(p, q, r):
         return (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)
+
+    @staticmethod
+    def orientation(p, q, r, epsilon=0):
+        d = Point.det(p, q, r)
+        if d > epsilon:
+            return 1  # "clockwise" #lewa
+        elif d < (-1) * epsilon:
+            return -1  # "counterclockwise" #prawa
+        else:
+            return 0  # "collinear"

@@ -93,3 +93,41 @@ class Polygon:
                     continue
             else:  # prawidlowy
                 classification["prawidlowe"].append(q)
+
+    def __triangulate(self):
+        if not self.__is_y_monotone():
+            print("BLAD W __triangulate()") #TODO pozniej usunac
+            return
+        V = sorted([[self.vertices[i], self.chain[i]] for i in range(len(self.vertices))], key = lambda v: v[0].point.y)
+
+        def belongs(i_p, i_q, i_r) -> bool:
+            p = V[i_p][0].point
+            q = V[i_q][0].point
+            r = V[i_r][0].point
+
+            if V[i_r][1] == 1:
+                return Point.orientation(p, q, r) > 0
+            else:
+                return Point.orientation(p, q, r) < 0
+
+        S = [0,1] #STACK
+        for i in range(2,n):
+            if V[i][1] == V[S[-1]][1] or V[i][1] == 0 or V[S[-1]][1] == 0:
+                nS = []
+                while len(S) > 1:
+                    if belongs(S[-2], S[-1], i):
+                        self.add_triangle(V[i][0], V[S[-1]][0], V[S[-2]][0])
+                        S.pop()
+                    else:
+                        nS.append(S.pop())
+                nS.append(S.pop())
+                nS.reverse()
+                nS.append(i)
+                S = nS
+            else:
+                l = len(S)
+                ve = S[-1]
+                for j in range(l-1):
+                    self.add_triangle(V[i][0], V[S[-1]][0], V[S[-2]][0])
+                    S.pop() #v
+                S = [ve, i]
