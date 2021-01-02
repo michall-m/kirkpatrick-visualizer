@@ -1,3 +1,5 @@
+import numpy as np
+
 class Point:
     def __init__(self, x, y):
         self.x = x
@@ -22,6 +24,10 @@ class Point:
             return -1  # "counterclockwise" #prawa
         else:
             return 0  # "collinear"
+
+    @staticmethod
+    def distance(p, q):
+        return np.sqrt((p.x - q.x)**2 + (p.y - q.y)**2)
 
     def to_tuple(self):
         return (self.x, self.y)

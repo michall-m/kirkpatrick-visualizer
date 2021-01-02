@@ -7,6 +7,8 @@ class Triangle:
         self.vertices = {v1, v2, v3}
         self.children = children
         self.polygon = polygon
+        for v in [v1,v2,v3]:
+            v.add_triangle(self)
 
 
     def __eq__(self, other):

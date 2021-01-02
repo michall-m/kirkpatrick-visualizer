@@ -3,6 +3,8 @@ from projekt.Point_class import Point
 from projekt.Vertex_class import Vertex
 from projekt.main import *
 from projekt.Polygon_class import Polygon
+from projekt.ConvexHull import graham_scan
+
 
 if __name__ == "__main__":
     """
@@ -30,6 +32,7 @@ if __name__ == "__main__":
                  [2.365801411290322, -4.776348039215687],
                  [-0.09387600806451779, -6.124387254901963]]
     test_vertices = [Vertex(Point(p[0],p[1])) for p in test_data]
+    graham_scan(test_vertices)
     test_polygon = Polygon(test_vertices)
     test_polygon.actions()
     test_plot = Plot(test_polygon.scenes)
