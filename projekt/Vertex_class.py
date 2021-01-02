@@ -5,6 +5,7 @@ class Vertex:
     def __init__(self, point: Point):
         self.point = point
         self.triangles = []
+        self.additional_var = None
 
     def add_triangle(self, triangle):
         self.triangles.append(triangle)
@@ -15,3 +16,9 @@ class Vertex:
 
     def __hash__(self):
         return hash(self.point)
+
+    def set_additional_variable(self, variable):
+        self.additional_var = variable
+
+    def get_additional_variable(self, variable):
+        return self.additional_var

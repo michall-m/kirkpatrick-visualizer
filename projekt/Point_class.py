@@ -22,3 +22,11 @@ class Point:
             return -1  # "counterclockwise" #prawa
         else:
             return 0  # "collinear"
+
+    def to_tuple(self):
+        return (self.x, self.y)
+
+    @staticmethod
+    def to_line(p,q):
+        return [p.to_tuple(), q.to_tuple()]
+
