@@ -14,6 +14,7 @@ class Polygon:
         self.chain = self.__get_chain()
         self.scenes = []  # puste
         self.sides = []
+        self.parent = None #dzielimy niemonotoniczny na monotoniczne i one mają ten bazowy jako parent
         for i in range(len(self.vertices)):
             self.sides.append([(self.vertices[i].point.x, self.vertices[i].point.y),
                                (self.vertices[(i + 1) % len(self.vertices)].point.x,
@@ -47,12 +48,13 @@ class Polygon:
         while self.vertices[i] != self.vertices[self.top_point_index]:
             C[i] = -1
             i += 1
-        C[0] = 0
-        C[self.top_point_index] = 0
+        C[0] = -1
+        C[self.top_point_index] = 1
         return C
 
     def add_triangle(self, triangle):
         self.triangles.add(triangle)
+        triangle.polygon = self
 
     def __is_y_monotone(self):
         V = self.vertices
@@ -292,6 +294,7 @@ class Polygon:
         sd = []
         for sp in subpolygons:
             sd = [] + sd + sp.sides.copy()
+            sp.parent = self
             #self.scenes.append(Scene(lines = [LinesCollection(sp.sides.copy(), color = 'green')]))
         return subpolygons
         zz = 1
