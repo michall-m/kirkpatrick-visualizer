@@ -55,13 +55,14 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
             vertices_no.append('left')
             continue
         print("error in for v in ch_vertices in partition_triangle_into_polygons in Kirkpatrick")
+    """
     most_left = min(ch_vertices, key = lambda v: (v.point.y, v.point.x))
     def f(b,c):
-        if not polygons['left']:
-            return 1
+        #if not polygons['left']:
+        #    return 1
         #v_s = Vertex(Point((tr_coord[0][0] + tr_coord[1][0]) / 2.0, (tr_coord[0][1] + tr_coord[1][1]) / 2.0))
-        v_s = polygons['left'][-1]
-        return comparing_f(v_s, b, c)
+        #v_s = polygons['left'][-1]
+        return comparing_f(most_left, b, c)
     def g(b,c):
         if not polygons['bottom']:
             return 1
@@ -74,6 +75,7 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
         #v_s = Vertex(Point((tr_coord[1][0] + tr_coord[2][0]) / 2.0, (tr_coord[1][1] + tr_coord[2][1]) / 2.0))
         v_s = polygons['right'][-1]
         return comparing_f(v_s, b, c)
+    """
 
     i = 0
     j = 0
@@ -117,14 +119,21 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
     #polygons['left'].sort(key = cmp_to_key(f))
     #polygons['right'].sort(key=cmp_to_key(h))
     #polygons['bottom'].sort(key = cmp_to_key(g))
-
-    polygons['left'] = [Vertex(point['top'])] + polygons['left'] + [Vertex(point['bottom_left'])]
-    polygons['right'] = [Vertex(point['bottom_right'])] + polygons['right'] + [Vertex(point['top'])]
-    polygons['bottom'] = [Vertex(point['bottom_left'])] + polygons['bottom'] + [Vertex(point['bottom_right'])]
-
     polygons['left'].reverse()
+    polygons['left'] = [Vertex(point['bottom_left'])] + polygons['left'] + [Vertex(point['top'])]
+
     polygons['right'].reverse()
+    polygons['right'] = [Vertex(point['bottom_right'])] + [Vertex(point['top'])] + polygons['right']
+
     polygons['bottom'].reverse()
+    polygons['bottom'] = [Vertex(point['bottom_left'])] + [Vertex(point['bottom_right'])] + polygons['bottom']
+    """
+    for k in list(polygons.keys()):
+        v_min = min(polygons[k], key = lambda v: (v.point.y, v.point.x))
+        def func(b,c):
+            return comparing_f(v_min, b, c)
+        polygons[k].sort(key = cmp_to_key(func))
+    """
 
     p = {'left': Polygon(polygons['left']),
          'right': Polygon(polygons['right']),
