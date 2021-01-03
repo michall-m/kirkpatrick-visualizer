@@ -4,6 +4,7 @@ from projekt.Vertex_class import Vertex
 from projekt.main import *
 from projekt.Polygon_class import Polygon
 from projekt.ConvexHull import graham_scan
+from projekt.KirkpatrickAlgorithm import *
 
 
 if __name__ == "__main__":
@@ -32,8 +33,20 @@ if __name__ == "__main__":
                  [2.365801411290322, -4.776348039215687],
                  [-0.09387600806451779, -6.124387254901963]]
     test_vertices = [Vertex(Point(p[0],p[1])) for p in test_data]
-    graham_scan(test_vertices)
+    gs = graham_scan(test_vertices)
+    t = ch_triangle(gs)
+    p = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, test_vertices)
     test_polygon = Polygon(test_vertices)
     test_polygon.actions()
     test_plot = Plot(test_polygon.scenes)
+    test_plot.add_scene(Scene(lines=[LinesCollection(test_polygon.sides), LinesCollection(t['triangle'].to_list(), color = 'blue')]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow'),
+                                     LinesCollection(p['right'].sides, color = 'green'),
+                                     LinesCollection(p['bottom'].sides, color = 'blue')#,
+                                     #LinesCollection(test_polygon.sides),
+                                     #LinesCollection([[gs[i].point.to_tuple(), gs[(i+1)%len(gs)].point.to_tuple()] for i in range(len(gs))], color = 'red')
+                                     ]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow')]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['right'].sides, color = 'green')]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['bottom'].sides, color = 'blue')]))
     test_plot.draw()

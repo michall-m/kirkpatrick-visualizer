@@ -451,7 +451,7 @@ class Polygon:
         s = []
         for tr in list(self.triangles):
             s += tr.to_list()
-            self.scenes.append(Scene(lines= [LinesCollection(self.sides), LinesCollection(s, color='yellow')]))
+        self.scenes.append(Scene(lines= [LinesCollection(self.sides), LinesCollection(s, color='yellow')]))
 
 
     def actions(self):

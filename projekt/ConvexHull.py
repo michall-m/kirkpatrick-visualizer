@@ -1,29 +1,31 @@
 from functools import cmp_to_key
 from projekt.Point_class import Point
 
+
+def comparing_f(a, b, c, e=0):
+    p = a.point
+    q = b.point
+    r = c.point
+    if (b == c):
+        return 0
+        # print ("Equal")
+    orient = Point.orientation(p, q, r, epsilon=e)
+    # print("a: ", a, "   b: ", b, "   c: ", c, "    orient:",orientation)
+    if orient == 1:
+        # print("True")
+        return 1
+    if orient == -1:
+        # print("False")
+        return -1
+    if Point.distance(p, q) < Point.distance(p, r):
+        # print("False")
+        return -1
+    # print("True")
+    return 1
+
 def graham_scan(vertices):
     most_left = min(vertices, key=lambda v: (v.point.y, v.point.x))
 
-    def comparing_f(a, b, c, e=0):
-        p = a.point
-        q = b.point
-        r = c.point
-        if (b == c):
-            return 0
-            # print ("Equal")
-        orient = Point.orientation(p, q, r, epsilon=e)
-        # print("a: ", a, "   b: ", b, "   c: ", c, "    orient:",orientation)
-        if orient == 1:
-            # print("True")
-            return 1
-        if orient == -1:
-            # print("False")
-            return -1
-        if Point.distance(p, q) < Point.distance(p, r):
-            # print("False")
-            return -1
-        # print("True")
-        return 1
 
     def is_collinear(a, b, c, e=0):
         return Point.orientation(a.point, b.point, c.point, epsilon=e) == 0
