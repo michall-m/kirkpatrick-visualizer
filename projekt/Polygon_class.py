@@ -416,13 +416,13 @@ class Polygon:
                 S = [ve, i]
         ts = []
         self.scenes.append(Scene(lines = [LinesCollection([tr.to_list()[i] for tr in self.triangles for i in range(3)], color = 'crimson')]))
-
+        """
         if len(S) > 3:
             tmp_polygon = Polygon([V[s][0] for s in S])
             tmp_polygon.triangulate()
             for tr in list(tmp_polygon.triangles):
                 self.add_triangle(tr)
-        """
+        
         while len(S) > 3:
             for i in range(1,len(S)):
                 if Point.orientation(V[S[0]][0].point, V[S[1]][0].point, V[S[2]][0].point) != Point.orientation(V[S[i]][0].point, V[S[i+1]][0].point, V[S[i+2]][0].point):
@@ -432,8 +432,8 @@ class Polygon:
                 self.add_triangle(Triangle(V[S[0]][0], V[S[1]][0], V[S[2]][0]))
                 S = S[:1] + S[2:]
                 """
-        if len(S) == 3:
-            self.add_triangle(Triangle(V[S[0]][0], V[S[1]][0], V[S[2]][0]))
+        #if len(S) == 3:
+        #    self.add_triangle(Triangle(V[S[0]][0], V[S[1]][0], V[S[2]][0]))
 
 
         zzzz = 0

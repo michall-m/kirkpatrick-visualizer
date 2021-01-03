@@ -1,5 +1,6 @@
 from projekt import *
 from projekt.ConvexHull import *
+from projekt.main import *
 
 def ch_triangle(ch_vertices, delta = 1):
     first_p = ch_vertices[0].point
@@ -135,4 +136,28 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
 
 
 def Kirkpatricick(polygons):
-    z = 134
+    p = polygons[0]
+    gs = graham_scan(p.vertices)
+    t = ch_triangle(gs)
+    tp = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, p.vertices)
+    l = tp['left']
+    r = tp['right']
+    b = tp['bottom']
+    l.actions()
+    r.actions()
+    b.actions()
+    triangles_vizu = {'l':[],
+                      'r':[],
+                      'b':[]
+                      }
+    for tr in l.triangles:
+        triangles_vizu['l'] += tr.to_list()
+    for tr in r.triangles:
+        triangles_vizu['r'] += tr.to_list()
+    for tr in b.triangles:
+        triangles_vizu['b'] += tr.to_list()
+    return Scene(lines = [LinesCollection(triangles_vizu['l'], color = 'yellow'),
+                          LinesCollection(triangles_vizu['r'], color = 'green'),
+                          LinesCollection(triangles_vizu['b'], color = 'blue')
+                          ]
+                 )
