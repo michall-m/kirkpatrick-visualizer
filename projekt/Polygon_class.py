@@ -14,6 +14,7 @@ class Polygon:
         self.chain = self.__get_chain()
         self.scenes = []  # puste
         self.sides = []
+        self.__is_triangulated = False
         self.parent = None #dzielimy niemonotoniczny na monotoniczne i one mają ten bazowy jako parent
         for i in range(len(self.vertices)):
             self.sides.append([(self.vertices[i].point.x, self.vertices[i].point.y),
@@ -265,13 +266,20 @@ class Polygon:
         e = len(edges)
         subpolygons = []
         diff = 0
+        """
+        if edges:
+            start_i = vertices_index[min(edges[0][0], edges[0][1], key = lambda e: vertices_index[e])]
+            ver = ver[start_i:] + ver[:start_i]
+            for i in range(len(ver)):
+                vertices_index[ver[i]] = i"""
+                #to przerobic zeby wystapoealo jakos tak przed 255 linijka
 
         def new_subpolygon(t, index, ver, vertices, subpolygons, e):
             i = index
             j = index
             first_loop = True
             current_subpolygon_vertices = [ver[j]]
-            while(first_loop or (e > 0 and ver[j] != t)):
+            while(first_loop or (e>0 and ver[j] != t)):
                 curr = ver[j]
                 if first_loop:
                     first_loop = False
@@ -288,6 +296,8 @@ class Polygon:
                         vertices_index[ver[ss]] -= len(subpolygons[-1].vertices) - 2
                         ss += 1
                     current_subpolygon_vertices = current_subpolygon_vertices[:(-1)*(len(subpolygons[-1].vertices)-1)] + [current_subpolygon_vertices[-1]]
+            if e == 0:
+                current_subpolygon_vertices = [] + ver
             subpolygons.append(Polygon(current_subpolygon_vertices))
             return e-1, ver[:i+1] + ver[j:]
         new_subpolygon(ver[0], 0, ver, vertices, subpolygons, e)
@@ -377,6 +387,8 @@ class Polygon:
         if not self.__is_y_monotone():
             print("BLAD W __triangulate()")  # TODO pozniej usunac
             return
+        if self.__is_triangulated:
+            return
         V = sorted([[self.vertices[i], self.chain[i]] for i in range(len(self.vertices))], key=lambda v: v[0].point.y)
         if len(V) == 3:
             self.add_triangle(Triangle(V[0][0], V[1][0], V[2][0]))
@@ -416,6 +428,7 @@ class Polygon:
                 S = [ve, i]
         ts = []
         self.scenes.append(Scene(lines = [LinesCollection([tr.to_list()[i] for tr in self.triangles for i in range(3)], color = 'crimson')]))
+        self.__is_triangulated = True
         """
         if len(S) > 3:
             tmp_polygon = Polygon([V[s][0] for s in S])
@@ -435,8 +448,6 @@ class Polygon:
         #if len(S) == 3:
         #    self.add_triangle(Triangle(V[S[0]][0], V[S[1]][0], V[S[2]][0]))
 
-
-        zzzz = 0
 
     def __triangulation(self):
         if self.__is_y_monotone():

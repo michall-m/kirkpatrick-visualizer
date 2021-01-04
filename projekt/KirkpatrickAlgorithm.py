@@ -144,29 +144,48 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
 
 
 
-def Kirkpatricick(polygons):
-    p = polygons[0]
-    gs = graham_scan(p.vertices)
+def Kirkpatricick(polygon):
+    #
+    # Zebranie danych z funkcji pomocniczych
+    #
+    gs = graham_scan(polygon.vertices)
     t = ch_triangle(gs)
-    tp = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, p.vertices)
-    l = tp['left']
-    r = tp['right']
-    b = tp['bottom']
-    l.actions()
-    r.actions()
-    b.actions()
-    triangles_vizu = {'l':[],
-                      'r':[],
-                      'b':[]
+    tp = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, polygon.vertices)
+    left = tp['left']
+    right = tp['right']
+    bottom = tp['bottom']
+    left.actions()
+    right.actions()
+    bottom.actions()
+    polygon.actions()
+
+
+    #
+    # Wizualizacja, sceny
+    #
+    kirkpatrick_scenes = []
+    triangles_vizu = {'left':[],
+                      'right':[],
+                      'bottom':[],
+                      'polygon':[]
                       }
-    for tr in l.triangles:
-        triangles_vizu['l'] += tr.to_list()
-    for tr in r.triangles:
-        triangles_vizu['r'] += tr.to_list()
-    for tr in b.triangles:
-        triangles_vizu['b'] += tr.to_list()
-    return Scene(lines = [LinesCollection(triangles_vizu['l'], color = 'yellow'),
-                          LinesCollection(triangles_vizu['r'], color = 'green'),
-                          LinesCollection(triangles_vizu['b'], color = 'blue')
-                          ]
-                 )
+
+    for tr in left.triangles:
+        triangles_vizu['left'] += tr.to_list()
+    for tr in right.triangles:
+        triangles_vizu['right'] += tr.to_list()
+    for tr in bottom.triangles:
+        triangles_vizu['bottom'] += tr.to_list()
+    for tr in polygon.triangles:
+        triangles_vizu['polygon'] += tr.to_list()
+
+    kirkpatrick_scenes.append(Scene(lines = [LinesCollection(triangles_vizu['left'], color = 'yellow'),
+                                      LinesCollection(triangles_vizu['right'], color = 'green'),
+                                      LinesCollection(triangles_vizu['bottom'], color = 'blue'),
+                                      LinesCollection(triangles_vizu['polygon'], color = 'crimson')
+                                      ]))
+
+
+
+
+    

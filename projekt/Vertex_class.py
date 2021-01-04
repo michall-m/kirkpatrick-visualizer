@@ -20,5 +20,8 @@ class Vertex:
     def set_additional_variable(self, variable):
         self.additional_var = variable
 
+    def __str__(self):
+        return self.point.to_tuple()
+
     def get_additional_variable(self, variable):
         return self.additional_var
