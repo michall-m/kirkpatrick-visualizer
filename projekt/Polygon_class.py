@@ -13,7 +13,7 @@ class Polygon:
         self.triangles = set()
         self.chain = self.__get_chain()
         self.scenes = []  # puste
-        self.sides = []
+        self.sides = [] #jako listy
         self.__is_triangulated = False
         self.parent = None #dzielimy niemonotoniczny na monotoniczne i one mają ten bazowy jako parent
         for i in range(len(self.vertices)):
@@ -386,8 +386,11 @@ class Polygon:
     def triangulate(self):
         if not self.__is_y_monotone():
             print("BLAD W __triangulate()")  # TODO pozniej usunac
-            return
+            #raise IOError
+            #return
         if self.__is_triangulated:
+            return
+        if len(self.vertices) < 3:
             return
         V = sorted([[self.vertices[i], self.chain[i]] for i in range(len(self.vertices))], key=lambda v: v[0].point.y)
         if len(V) == 3:
@@ -469,3 +472,12 @@ class Polygon:
         self.__triangulation()
         # self.__classify_vertices()
         # self.PrepareForTriangulation()
+
+
+    def to_scene(self, triangles = False, color = 'dodgerblue'):
+        triangles = []
+        for tr in self.triangles:
+            triangles += tr.to_list()
+        return Scene(lines=[LinesCollection(triangles, color = color),
+                            LinesCollection(self.sides, color = color)
+                    ])

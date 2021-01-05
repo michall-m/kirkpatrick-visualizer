@@ -35,10 +35,11 @@ if __name__ == "__main__":
     test_vertices = [Vertex(Point(p[0],p[1])) for p in test_data]
     gs = graham_scan(test_vertices)
     t = ch_triangle(gs)
-    p = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, test_vertices)
+    #p = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, test_vertices)
     test_polygon = Polygon(test_vertices)
     test_polygon.actions()
     test_plot = Plot(test_polygon.scenes)
+    """
     test_plot.add_scene(Scene(lines=[LinesCollection(test_polygon.sides), LinesCollection(t['triangle'].to_list(), color = 'blue')]))
     test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow'),
                                      LinesCollection(p['right'].sides, color = 'green'),
@@ -48,6 +49,7 @@ if __name__ == "__main__":
                                      ]))
     test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow')]))
     test_plot.add_scene(Scene(lines=[LinesCollection(p['right'].sides, color = 'green')]))
-    test_plot.add_scene(Scene(lines=[LinesCollection(p['bottom'].sides, color = 'blue')]))
-    test_plot.add_scenes(Kirkpatricick([test_polygon]))
-    test_plot.draw()
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['bottom'].sides, color = 'blue')]))"""
+    Kirkpatricick(test_polygon)
+    #test_plot.add_scenes(Kirkpatricick(test_polygon))
+    #test_plot.draw()

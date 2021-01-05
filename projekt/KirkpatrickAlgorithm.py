@@ -27,7 +27,7 @@ def ch_triangle(ch_vertices, delta = 1):
          }
     return t
 
-def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices, vertices):
+def failed_partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices, vertices):
     point = {'bottom_left': Point(tr_coord[0][0], tr_coord[0][1]),
              'bottom_right': Point(tr_coord[2][0], tr_coord[2][1]),
              'top': Point(tr_coord[1][0], tr_coord[1][1])
@@ -98,6 +98,8 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
         polygons['right'] += [polygons['left'][0]]
         polygons['bottom'] += [polygons['right'][0]]
 
+
+
     for k in list(polygons.keys()):
         if not polygons[k]:
             continue
@@ -142,15 +144,93 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
 
     return p
 
+def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices, vertices):
+    point = {'bottom_left': Point(tr_coord[0][0], tr_coord[0][1]),
+             'bottom_right': Point(tr_coord[2][0], tr_coord[2][1]),
+             'top': Point(tr_coord[1][0], tr_coord[1][1])
+             }
+    polygons = {'left': [], #TODO dodaj vertexy trojkata i zastanow się nad posortowaniem wierzcholkow
+                'right': [],
+                'bottom': []
+                }
+    v_copy = vertices.copy()
 
+    #LEFT
+    max_l = 0
+    max_r = 0
+
+    for i in range(len(v_copy)):
+        cur = v_copy[i]
+        if Point.orientation(v_copy[max_r].point, point['bottom_left'], cur.point) == -1:
+            max_r = i
+        if Point.orientation(v_copy[max_l].point, point['top'], cur.point) == 1:
+            max_l = i
+
+    if max_l > max_r:
+        polygons['left'] = v_copy[max_l:] + v_copy[:max_r+1]
+        v_copy = v_copy[max_r:max_l+1]
+    elif max_l < max_r:
+        polygons['left'] = v_copy[max_l:max_r+1]
+        v_copy = v_copy[max_l:] + v_copy[:max_r+1]
+    else:
+        polygons['left'] = v_copy
+        v_copy = [v_copy[max_r]]
+
+    #BOTTOM
+    max_l = 0
+    max_r = 0
+
+    for i in range(len(v_copy)):
+        cur = v_copy[i]
+        if Point.orientation(v_copy[max_l].point, point['bottom_left'], cur.point) == 1:
+            max_l = i
+        if Point.orientation(v_copy[max_r].point, point['bottom_right'], cur.point) == -1:
+            max_r = i
+
+    if max_l < max_r:
+        polygons['bottom'] = v_copy[max_l:max_r+1]
+        v_copy = v_copy[:max_l+1] + v_copy[max_r:]
+    elif max_l > max_r:
+        polygons['bottom'] = v_copy[max_l:] + v_copy[:max_r+1]
+        v_copy = v_copy[max_l:max_r+1]
+    else:
+        polygons['bottom'] = v_copy
+        v_copy = [v_copy[max_r]]
+
+    #RIGHT
+
+    polygons['right'] = v_copy
+
+    polygons['left'].reverse()
+    polygons['left'] = [Vertex(point['bottom_left'])] + polygons['left'] + [Vertex(point['top'])]
+
+    polygons['right'].reverse()
+    polygons['right'] = [Vertex(point['bottom_right'])] + [Vertex(point['top'])] + polygons['right']
+
+    polygons['bottom'].reverse()
+    polygons['bottom'] = [Vertex(point['bottom_left'])] + [Vertex(point['bottom_right'])] + polygons['bottom']
+    """
+    for k in list(polygons.keys()):
+        v_min = min(polygons[k], key = lambda v: (v.point.y, v.point.x))
+        def func(b,c):
+            return comparing_f(v_min, b, c)
+        polygons[k].sort(key = cmp_to_key(func))
+    """
+
+    p = {'left': Polygon(polygons['left']),
+         'right': Polygon(polygons['right']),
+         'bottom': Polygon(polygons['bottom'])
+         }
+
+    return p
 
 def Kirkpatricick(polygon):
     #
     # Zebranie danych z funkcji pomocniczych
     #
     gs = graham_scan(polygon.vertices)
-    t = ch_triangle(gs)
-    tp = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, polygon.vertices)
+    bt = ch_triangle(gs) #biggest triangle
+    tp = partition_triangle_into_polygons(bt['triangle'], bt['tr_center'], bt['tr_coord'], gs, polygon.vertices)
     left = tp['left']
     right = tp['right']
     bottom = tp['bottom']
@@ -158,7 +238,9 @@ def Kirkpatricick(polygon):
     right.actions()
     bottom.actions()
     polygon.actions()
+    #test_partition_triangle_into_polygons(bt['triangle'], bt['tr_center'], bt['tr_coord'], gs, polygon.vertices)
 
+    polygons = [left, right, bottom, polygon]
 
     #
     # Wizualizacja, sceny
@@ -185,7 +267,97 @@ def Kirkpatricick(polygon):
                                       LinesCollection(triangles_vizu['polygon'], color = 'crimson')
                                       ]))
 
+    #def add_kirkpatrick_scene(P, l, r, b): #polygons list, left, right, bottom
 
 
 
-    
+    #
+    # Funkcje pomocnicze:
+    #
+
+    # Zbiór wierzchołków niezależnych o maksymalnym stopniu 8
+    def get_independent_set(v):
+        vertices = set(v)
+        n = len(vertices)//18
+        vertices_copy = list(vertices.copy())
+        marked = {}
+        independent_set = []
+        for vertex in vertices_copy:
+            marked[vertex] = False
+        for vertex in bt['triangle'].vertices:
+            marked[vertex] = True
+        for vertex in vertices_copy:
+            if vertex.get_degree() > 8:
+                marked[vertex] = True
+        for vertex in vertices_copy:
+            if not marked[vertex]:
+                independent_set.append(vertex)
+                marked[vertex] = True
+                for side in list(vertex.sides):
+                    another = side.get_another_vertice(vertex)
+                    if another in marked:
+                        marked[another] = True
+        return independent_set
+
+    # Usuwa zadany wierzcholek, zwraca wnęke jako obiekt klasy Polygon()
+    def delete_vertex(to_del_vertex: Vertex, vertices):
+        polygon_vertices = []
+        for side in list(to_del_vertex.sides):
+            another = side.get_another_vertice(to_del_vertex)
+            if another in vertices:
+                polygon_vertices.append(side.get_another_vertice(to_del_vertex))
+        def f(b,c):
+            return comparing_f(to_del_vertex, b, c)
+        polygon_vertices.sort(key = cmp_to_key(f))
+        vertices.remove(to_del_vertex)
+        return Polygon(polygon_vertices)
+
+
+
+    #
+    # Główna pętla:
+    #
+
+    vertices = polygon.vertices.copy()
+    while len(vertices) > 12:
+        polygons = []
+        S = get_independent_set(vertices)
+        for vertex in S:
+            if len(vertices) == 12:
+                break
+            polygons.append(delete_vertex(vertex, vertices))
+            if not polygons:
+                print("not polygons")
+                return
+            polygons[-1].actions()
+            convex_hull_vertices = graham_scan(vertices)
+            bt = ch_triangle(convex_hull_vertices)
+            triangle_polygons = partition_triangle_into_polygons(bt['triangle'],
+                                                                 bt['tr_center'],
+                                                                 bt['tr_coord'],
+                                                                 convex_hull_vertices,
+                                                                 vertices)
+            for k in triangle_polygons.keys():
+                kirkpatrick_scenes.append(triangle_polygons[k].to_scene())
+                triangle_polygons[k].actions()
+                kirkpatrick_scenes += triangle_polygons[k].scenes
+            current_lines = []
+            for pol in polygons:
+                current_lines += pol.to_scene().lines
+            current_lines += triangle_polygons['left'].to_scene(color='yellow').lines + \
+                triangle_polygons['right'].to_scene(color = 'green').lines + \
+                triangle_polygons['bottom'].to_scene(color='blue').lines + \
+                [LinesCollection([[convex_hull_vertices[ii].point.to_tuple(),
+                                   convex_hull_vertices[(ii+1)%len(convex_hull_vertices)].point.to_tuple()]
+                                  for ii in range(len(convex_hull_vertices))],
+                                 color = 'red')]
+            kirkpatrick_scenes.append(Scene(lines = current_lines))
+
+
+
+
+    #ppppp = delete_vertex(S[0], vertices)
+    #ppppp.actions()
+    plot = Plot(kirkpatrick_scenes)
+    #plot.add_scene(Scene(lines=ppppp.to_scene(color = 'crimson').lines + left.to_scene().lines + right.to_scene().lines + bottom.to_scene().lines))
+    plot.draw()
