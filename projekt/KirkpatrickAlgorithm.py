@@ -1,6 +1,7 @@
 from projekt import *
 from projekt.ConvexHull import *
 from projekt.main import *
+from projekt.Side_class import Side
 
 def ch_triangle(ch_vertices, delta = 1):
     first_p = ch_vertices[0].point
@@ -16,7 +17,7 @@ def ch_triangle(ch_vertices, delta = 1):
         max_x = max(max_x, v.point.x)
 
     a = max(max_y-min_y, max_x - min_x)
-    tr = [(min_x - a/2.0 - delta, min_y - delta/2.0), (min_x + a/2.0, min_y + 2.0 * a + delta), (min_x + 3.0*a/2.0 + delta, min_y - delta/2.0)]
+    tr = [(min_x - a/2.0 - delta, min_y - delta/2.0 - 0.0001), (min_x + a/2.0, min_y + 2.0 * a + delta), (min_x + 3.0*a/2.0 + delta, min_y - delta/2.0)]
     triangle = Triangle(Vertex(Point(tr[0][0], tr[0][1])),
                         Vertex(Point(tr[1][0], tr[1][1])),
                         Vertex(Point(tr[2][0], tr[2][1])))
@@ -171,7 +172,7 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
         v_copy = v_copy[max_r:max_l+1]
     elif max_l < max_r:
         polygons['left'] = v_copy[max_l:max_r+1]
-        v_copy = v_copy[max_l:] + v_copy[:max_r+1]
+        v_copy = v_copy[max_r:] + v_copy[:max_l+1]
     else:
         polygons['left'] = v_copy
         v_copy = [v_copy[max_r]]
@@ -182,8 +183,8 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
 
     for i in range(len(v_copy)):
         cur = v_copy[i]
-        if Point.orientation(v_copy[max_l].point, point['bottom_left'], cur.point) == 1:
-            max_l = i
+        #if Point.orientation(v_copy[max_l].point, point['bottom_left'], cur.point) == 1:
+        #    max_l = i
         if Point.orientation(v_copy[max_r].point, point['bottom_right'], cur.point) == -1:
             max_r = i
 
@@ -251,21 +252,26 @@ def Kirkpatricick(polygon):
                       'bottom':[],
                       'polygon':[]
                       }
-
+    """
     for tr in left.triangles:
         triangles_vizu['left'] += tr.to_list()
     for tr in right.triangles:
         triangles_vizu['right'] += tr.to_list()
     for tr in bottom.triangles:
         triangles_vizu['bottom'] += tr.to_list()
+    """
     for tr in polygon.triangles:
         triangles_vizu['polygon'] += tr.to_list()
+    triangles_vizu['left'] += left.sides
+    triangles_vizu['right'] += right.sides
+    triangles_vizu['bottom'] += bottom.sides
 
     kirkpatrick_scenes.append(Scene(lines = [LinesCollection(triangles_vizu['left'], color = 'yellow'),
                                       LinesCollection(triangles_vizu['right'], color = 'green'),
                                       LinesCollection(triangles_vizu['bottom'], color = 'blue'),
                                       LinesCollection(triangles_vizu['polygon'], color = 'crimson')
                                       ]))
+    #kirkpatrick_scenes += polygon.scenes
 
     #def add_kirkpatrick_scene(P, l, r, b): #polygons list, left, right, bottom
 
@@ -304,54 +310,70 @@ def Kirkpatricick(polygon):
         polygon_vertices = []
         for side in list(to_del_vertex.sides):
             another = side.get_another_vertice(to_del_vertex)
-            if another in vertices:
+            another.sides.remove(Side(to_del_vertex, another))
+            if another in vertices + list(bt['triangle'].vertices):
                 polygon_vertices.append(side.get_another_vertice(to_del_vertex))
+        bottom_point = min(polygon_vertices, key =lambda v: (v.point.y, v.point.x))
+        polygon_vertices.remove(bottom_point)
         def f(b,c):
-            return comparing_f(to_del_vertex, b, c)
-        polygon_vertices.sort(key = cmp_to_key(f))
+            return comparing_f(min_vertex, b, c)
+        polygon_vertices.sort(key=lambda v: (v.point.x - bottom_point.point.x) / (
+                        v.point.y - bottom_point.point.y) , reverse=True)
+        polygon_vertices = [bottom_point] + polygon_vertices
+        #if v.point.y - bottom_point.y != 0 else float('inf')
         vertices.remove(to_del_vertex)
         return Polygon(polygon_vertices)
 
 
 
     #
-    # Główna pętla:
+    # Główna pętla tworząca podstawy struktury:
     #
 
     vertices = polygon.vertices.copy()
-    while len(vertices) > 12:
+    while len(vertices) > 1:
         polygons = []
         S = get_independent_set(vertices)
         for vertex in S:
-            if len(vertices) == 12:
+            if len(vertices) == 1:
                 break
             polygons.append(delete_vertex(vertex, vertices))
             if not polygons:
                 print("not polygons")
                 return
             polygons[-1].actions()
-            convex_hull_vertices = graham_scan(vertices)
-            bt = ch_triangle(convex_hull_vertices)
+            if len(vertices) > 3:
+                convex_hull_vertices = graham_scan(vertices)
+            else:
+                convex_hull_vertices = vertices
+            #bt = ch_triangle(convex_hull_vertices)
             triangle_polygons = partition_triangle_into_polygons(bt['triangle'],
                                                                  bt['tr_center'],
                                                                  bt['tr_coord'],
                                                                  convex_hull_vertices,
                                                                  vertices)
-            for k in triangle_polygons.keys():
-                kirkpatrick_scenes.append(triangle_polygons[k].to_scene())
-                triangle_polygons[k].actions()
-                kirkpatrick_scenes += triangle_polygons[k].scenes
             current_lines = []
-            for pol in polygons:
-                current_lines += pol.to_scene().lines
-            current_lines += triangle_polygons['left'].to_scene(color='yellow').lines + \
-                triangle_polygons['right'].to_scene(color = 'green').lines + \
-                triangle_polygons['bottom'].to_scene(color='blue').lines + \
-                [LinesCollection([[convex_hull_vertices[ii].point.to_tuple(),
+            for trp in polygon.triangles.copy():
+                current_lines += [LinesCollection(trp.to_list(), color = 'mistyrose')]
+
+            for k in triangle_polygons.keys():
+                #kirkpatrick_scenes.append(triangle_polygons[k].to_scene())
+                triangle_polygons[k].actions()
+                #kirkpatrick_scenes += triangle_polygons[k].scenes
+            current_lines = []
+
+
+            current_lines += triangle_polygons['left'].to_scene(color='yellow', color2 = 'yellow').lines + \
+                triangle_polygons['right'].to_scene(color = 'green', color2 = 'green').lines + \
+                triangle_polygons['bottom'].to_scene(color='blue', color2 = 'blue').lines
+            #for pol in polygons:
+            #    current_lines += pol.to_scene(color2 = 'crimson').lines
+            current_lines += [LinesCollection([[convex_hull_vertices[ii].point.to_tuple(),
                                    convex_hull_vertices[(ii+1)%len(convex_hull_vertices)].point.to_tuple()]
                                   for ii in range(len(convex_hull_vertices))],
-                                 color = 'red')]
-            kirkpatrick_scenes.append(Scene(lines = current_lines))
+                                 color = 'blueviolet')]
+
+            kirkpatrick_scenes.append(Scene(lines = current_lines, points=[PointsCollection([v.point.to_tuple() for v in vertices.copy()])]))
 
 
 

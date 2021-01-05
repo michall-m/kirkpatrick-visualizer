@@ -124,7 +124,7 @@ class Polygon:
         return classified_vertices
 
     # TODO n^2 - > n log n, naming conventions, lambdas
-    def PrepareForTriangulation(self):
+    def failedPrepareForTriangulation(self):
         classification = self.__classify_vertices()
         points = self.vertices.copy()
         edges = []
@@ -249,6 +249,116 @@ class Polygon:
                                                         color='crimson')]))
         return newEdges
 
+    def PrepareForTriangulation(self):
+        classification = self.__classify_vertices()
+        points = self.vertices.copy()
+        edges = []
+        newEdges = []
+        for i in range(len(points)):
+            edges.append([points[i - 1], points[i]])
+        points.sort(key=(compareKey1), reverse=True)  # TODO lambda
+        edges.sort(key=(compareKey2))  # TODO lambda
+        broom = []  # miotla, na pozycji 0 ma pomocnika krawedzi, a na pozycji 1 krawedz
+        for vertex in points:
+            if classification[vertex.point] == 'prawidlowe':
+                start = binary_searchleftmost(edges, vertex.point.y, 0, len(edges) - 1)
+                for i in range(start, len(edges)):
+                    if edges[i][0].point.x == vertex.point.x:
+                        start = i
+                        break
+                if (edges[start][0].point.y > edges[start][1].point.y):
+                    for edge in broom:
+                        if edge[1][1].point == vertex.point:
+                            if classification[edge[0].point] == 'laczace':
+                                newEdges.append([edge[0], edge[1][1]])
+                        broom.remove(edge)
+                        break
+                    broom.append([vertex, edges[start]])
+                else:
+                    if len(broom) == 1:
+                        if classification[broom[0][0].point] == 'laczace':
+                            newEdges.append([broom[0][0], vertex])
+                        broom[0][0] = vertex
+                    else:
+                        indeks = 0
+                        distance = float('inf')
+                        for i in range(len(broom)):
+                            curr_dis = ((broom[i][1][0].point.x - broom[i][1][1].point.x) / (
+                                        broom[i][1][0].point.y - broom[i][1][1].point.y) *
+                                        (vertex.point.y - broom[i][1][1].point.y) + broom[i][1][1].point.x)
+                            curr_dis -= vertex.point.x
+                            curr_dis *= -1
+                            type(curr_dis)
+                            if curr_dis > 0 and curr_dis < distance:
+                                distance = curr_dis
+                                indeks = i
+                        if classification[broom[indeks][0].point] == 'laczace':
+                            newEdges.append([broom[indeks][0], vertex])
+                        broom[indeks][0] = vertex
+            elif classification[vertex.point] == 'poczatkowe':
+                start = binary_searchleftmost(edges, vertex.point.y, 0, len(edges) - 1)
+                for i in range(start, len(edges)):
+                    if edges[i][0].point.x == vertex.point.x:
+                        broom.append([vertex, edges[i]])
+                        break
+            elif classification[vertex.point] == 'koncowe':
+                for edge in broom:
+                    if edge[1][1].point == vertex.point:
+                        if classification[edge[0].point] == 'laczace':
+                            newEdges.append([edge[0], edge[1][1]])
+                        broom.remove(edge)
+                        break
+            elif classification[vertex.point] == 'dzielace':
+                indeks = 0
+                distance = float('inf')
+                for i in range(len(broom)):
+                    curr_dis = ((broom[i][1][0].point.x - broom[i][1][1].point.x) / (
+                                broom[i][1][0].point.y - broom[i][1][1].point.y) *
+                                (vertex.point.y - broom[i][1][1].point.y) + broom[i][1][1].point.x)
+                    curr_dis -= vertex.point.x
+                    curr_dis *= -1
+                    type(curr_dis)
+                    if curr_dis > 0 and curr_dis < distance:
+                        distance = curr_dis
+                        indeks = i
+                newEdges.append([vertex, broom[indeks][0]])
+                broom[indeks][0] = vertex
+                start = binary_searchleftmost(edges, vertex.point.y, 0, len(edges) - 1)
+                for i in range(start, len(edges)):
+                    if edges[i][0].point.x == vertex.point.x:
+                        broom.append([vertex, edges[i]])
+                        break
+            elif classification[vertex.point] == 'laczace':
+                for edge in broom:
+                    if edge[1][1].point == vertex.point:
+                        if classification[edge[0].point] == 'laczace':
+                            newEdges.append([edge[0], edge[1][1]])
+                        broom.remove(edge)
+                if len(broom) == 1:
+                    if classification[broom[0][0].point] == 'laczace':
+                        newEdges.append([broom[0][0], broom[0][1][1]])
+                    broom[0][0] = vertex
+                else:
+                    indeks = 0
+                    distance = float('inf')
+                    for i in range(len(broom)):
+                        curr_dis = ((broom[i][1][0].point.x - broom[i][1][1].point.x) / (
+                                    broom[i][1][0].point.y - broom[i][1][1].point.y) *
+                                    (vertex.point.y - broom[i][1][1].point.y) + broom[i][1][1].point.x)
+                        curr_dis -= vertex.point.x
+                        curr_dis *= -1
+                        if curr_dis > 0 and curr_dis < distance:
+                            distance = curr_dis
+                            indeks = i
+                    if classification[broom[indeks][0].point] == 'laczace':
+                        newEdges.append([broom[indeks][0], broom[indeks][1][1]])
+                    broom[indeks][0] = vertex
+        self.scenes.append(Scene(lines=[LinesCollection(self.sides),
+                                        LinesCollection([Point.to_line(v[0].point, v[1].point) for v in newEdges],
+                                                        color='crimson')]))
+        return newEdges
+
+
     def __partition_into_monotone_subpolygons(self):
         edges = self.PrepareForTriangulation()
         vertices = {}
@@ -278,26 +388,27 @@ class Polygon:
             i = index
             j = index
             first_loop = True
-            current_subpolygon_vertices = [ver[j]]
+            current_subpolygon_vertices = []
             while(first_loop or (e>0 and ver[j] != t)):
                 curr = ver[j]
                 if first_loop:
                     first_loop = False
                 if not vertices[ver[j]]:
                     j += 1
-                    current_subpolygon_vertices.append(ver[j])
                 else:
                     tmp = vertices[ver[j]][-1]
                     vertices[ver[j]].pop()
                     e, ver = new_subpolygon(ver[j], vertices_index[tmp], ver, vertices, subpolygons, e)
                     j -= len(subpolygons[-1].vertices) - 2
-                    ss = j - 1
+                    ss = j
                     while (ss != len(ver)):
                         vertices_index[ver[ss]] -= len(subpolygons[-1].vertices) - 2
                         ss += 1
-                    current_subpolygon_vertices = current_subpolygon_vertices[:(-1)*(len(subpolygons[-1].vertices)-1)] + [current_subpolygon_vertices[-1]]
+                    #current_subpolygon_vertices = current_subpolygon_vertices[:(-1)*(len(subpolygons[-1].vertices)-1)] + [current_subpolygon_vertices[-1]]
             if e == 0:
                 current_subpolygon_vertices = [] + ver
+            else:
+                current_subpolygon_vertices = ver[i:j+1]
             subpolygons.append(Polygon(current_subpolygon_vertices))
             return e-1, ver[:i+1] + ver[j:]
         new_subpolygon(ver[0], 0, ver, vertices, subpolygons, e)
@@ -305,7 +416,11 @@ class Polygon:
         for sp in subpolygons:
             sd = [] + sd + sp.sides.copy()
             sp.parent = self
-            #self.scenes.append(Scene(lines = [LinesCollection(sp.sides.copy(), color = 'green')]))
+            self.scenes.append(Scene(lines = [LinesCollection(sp.sides.copy(), color = 'green')]))
+            trl = []
+            for tr in sp.triangles:
+                trl += tr.to_list()
+            self.scenes.append(Scene(lines = [LinesCollection(trl, color = 'crimson')]))
         return subpolygons
         zz = 1
 
@@ -474,10 +589,10 @@ class Polygon:
         # self.PrepareForTriangulation()
 
 
-    def to_scene(self, triangles = False, color = 'dodgerblue'):
+    def to_scene(self, triangles = False, color = 'dodgerblue', color2 = 'dodgerblue'):
         triangles = []
         for tr in self.triangles:
             triangles += tr.to_list()
-        return Scene(lines=[LinesCollection(triangles, color = color),
+        return Scene(lines=[LinesCollection(triangles, color = color2),
                             LinesCollection(self.sides, color = color)
                     ])
