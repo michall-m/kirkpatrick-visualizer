@@ -272,13 +272,12 @@ def Kirkpatricick(polygon):
     triangles_vizu['right'] += right.sides
     triangles_vizu['bottom'] += bottom.sides
 
-    kirkpatrick_scenes.append(Scene(lines = [LinesCollection(triangles_vizu['left'], color = 'yellow'),
-                                      LinesCollection(triangles_vizu['right'], color = 'green'),
-                                      LinesCollection(triangles_vizu['bottom'], color = 'blue'),
-                                      LinesCollection(triangles_vizu['polygon'], color = 'crimson')
-                                      ]))
+    #kirkpatrick_scenes.append(Scene(lines = [LinesCollection(triangles_vizu['left'], color = 'yellow'),
+    #                                  LinesCollection(triangles_vizu['right'], color = 'green'),
+    #                                  LinesCollection(triangles_vizu['bottom'], color = 'blue'),
+    #                                  LinesCollection(triangles_vizu['polygon'], color = 'crimson')
+    #                                  ]))
     #kirkpatrick_scenes += polygon.scenes
-    tPo = Polygon(polygon.vertices.copy)
 
     #def add_kirkpatrick_scene(P, l, r, b): #polygons list, left, right, bottom
 
@@ -362,10 +361,32 @@ def Kirkpatricick(polygon):
     #
 
     vertices = polygon.vertices.copy()
+    convex_hull_vertices = graham_scan(vertices)
+    triangle_polygons = partition_triangle_into_polygons(bt['triangle'],
+                                                         bt['tr_center'],
+                                                         bt['tr_coord'],
+                                                         convex_hull_vertices,
+                                                         vertices)
+    for k in triangle_polygons.keys():
+        triangle_polygons[k].actions()
+    kirkpatrick_scenes.append(Scene(
+        points=[PointsCollection([v.point.to_tuple() for v in vertices])],
+        lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()])] + \
+              [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+              [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='hotpink')]
+    ))
     while len(vertices) > 1:
         polygons = []
         S = get_independent_set(vertices)
         for vertex in S:
+            # SCENA PRZED
+            kirkpatrick_scenes.append(Scene(
+                points=[PointsCollection([v.point.to_tuple() for v in vertices])] + \
+                       [PointsCollection([vertex.point.to_tuple()], color='red')],
+                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()])] +\
+                        [LinesCollection([s for s in bt['triangle'].to_list()], color = 'navy')] +\
+                        [LinesCollection([s for ctr in vertex.triangles for s in ctr.to_list()], color = 'orangered')]
+            ))
             if len(vertices) == 1:
                 break
             polygons.append(delete_vertex(vertex, vertices))
@@ -374,42 +395,48 @@ def Kirkpatricick(polygon):
                 return
             polygons[-1].actions()
             update_triangles(polygons[-1].triangles.copy(), vertex.triangles.copy())
-            if len(vertices) > 3:
-                convex_hull_vertices = graham_scan(vertices)
-            else:
-                convex_hull_vertices = vertices
-            #bt = ch_triangle(convex_hull_vertices)
-            triangle_polygons = partition_triangle_into_polygons(bt['triangle'],
-                                                                 bt['tr_center'],
-                                                                 bt['tr_coord'],
-                                                                 convex_hull_vertices,
-                                                                 vertices)
+
             current_lines = []
-            for trp in polygon.triangles.copy():
-                current_lines += [LinesCollection(trp.to_list(), color = 'mistyrose')]
+            #for trp in polygon.triangles.copy():
+            #    current_lines += [LinesCollection(trp.to_list(), color = 'mistyrose')]
 
-            for k in triangle_polygons.keys():
-                #kirkpatrick_scenes.append(triangle_polygons[k].to_scene())
-                triangle_polygons[k].actions()
-                #kirkpatrick_scenes += triangle_polygons[k].scenes
-            current_lines = []
+            """
+            for v in vertices:
+                for trv in v.triangles:
+                    current_lines += [LinesCollection(trv.to_list())]
+            btv = list(bt['triangle'].vertices)
+            for btvt in btv[0].triangles:
+                current_lines += [LinesCollection(btvt.to_list(), color = 'yellow')]
+            for btvt in btv[1].triangles:
+                current_lines += [LinesCollection(btvt.to_list(), color='green')]
+            for btvt in btv[2].triangles:
+                current_lines += [LinesCollection(btvt.to_list(), color='blue')]"""
+            #current_lines += [LinesCollection([[vertices[i].point.to_tuple(), vertices[(i+1) % len(vertices)].point.to_tuple()] for i in range(len(vertices))], color = 'green')]
 
 
-            current_lines += triangle_polygons['left'].to_scene(color='yellow', color2 = 'yellow').lines + \
-                triangle_polygons['right'].to_scene(color = 'green', color2 = 'green').lines + \
-                triangle_polygons['bottom'].to_scene(color='blue', color2 = 'blue').lines
-            for pol in polygons:
-                current_lines += pol.to_scene(color2 = 'crimson').lines
+            #current_lines += triangle_polygons['left'].to_scene(color='yellow', color2 = 'yellow').lines + \
+            #    triangle_polygons['right'].to_scene(color = 'green', color2 = 'green').lines + \
+            #    triangle_polygons['bottom'].to_scene(color='blue', color2 = 'blue').lines
+            #for pol in polygons:
+            #    current_lines += pol.to_scene(color = 'crimson').lines
+
             """
             current_lines += [LinesCollection([[convex_hull_vertices[ii].point.to_tuple(),
                                    convex_hull_vertices[(ii+1)%len(convex_hull_vertices)].point.to_tuple()]
                                   for ii in range(len(convex_hull_vertices))],
                                  color = 'blueviolet')]
             """
-            for pol in polygons:
-                current_lines += pol.to_scene(color2 = 'crimson').lines
+            #for pol in polygons:
+            #    current_lines += pol.to_scene(color2 = 'crimson').lines
 
-            kirkpatrick_scenes.append(Scene(lines = current_lines, points=[PointsCollection([v.point.to_tuple() for v in vertices.copy()])]))
+            #kirkpatrick_scenes.append(Scene(lines = current_lines, points=[PointsCollection([v.point.to_tuple() for v in vertices.copy()])]))
+            #SCENA PO
+            kirkpatrick_scenes.append(Scene(
+                points=[PointsCollection([v.point.to_tuple() for v in vertices])],
+                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()])] + \
+                      [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+                      [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color = 'darkgreen')]
+                ))
             if len(vertices) == 1:
                 for vtr in vertices[0].triangles:
                     bt['triangle'].add_child(vtr)
