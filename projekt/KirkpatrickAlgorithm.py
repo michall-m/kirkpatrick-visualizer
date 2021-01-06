@@ -230,7 +230,7 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
     return p
 
 
-def Kirkpatricick(polygon):
+def Kirkpatricick(polygon, points):
     #
     # Zebranie danych z funkcji pomocniczych
     #
@@ -465,7 +465,7 @@ def Kirkpatricick(polygon):
                 lines=deleted_set_scenes[i].lines + \
                       [LinesCollection([s for child in root.children for s in child.to_list()])] + \
                       [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')],
-                points=[PointsCollection([p.to_tuple()], color='fuchsia')]
+                points=[PointsCollection([p.to_tuple()], color='orange')]
             ))
 
             for child in root.children:
@@ -473,8 +473,8 @@ def Kirkpatricick(polygon):
                     lines=deleted_set_scenes[i].lines + \
                           [LinesCollection([s for rchild in root.children for s in rchild.to_list()])] + \
                           [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-                          [LinesCollection([s for s in child.to_list()], color='limegreen')],
-                    points=[PointsCollection([p.to_tuple()], color='fuchsia')]
+                          [LinesCollection([s for s in child.to_list()], color='gold')],
+                    points=[PointsCollection([p.to_tuple()], color='orange')]
                 ))
                 if child.is_in_triangle(p):
                     selected = child
@@ -485,50 +485,35 @@ def Kirkpatricick(polygon):
                       [LinesCollection([s for child in root.children for s in child.to_list()])] + \
                       [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] +\
                       [LinesCollection([s for s in selected.to_list()], color = 'forestgreen')],
-                points=[PointsCollection([p.to_tuple()], color='fuchsia')]
+                points=[PointsCollection([p.to_tuple()], color='orange')]
             ))
             root = selected
             i -= 1
-        locate_point_scenes.append(Scene(
-            lines=deleted_set_scenes[i].lines +\
-                root.polygon.to_scene().lines + \
-                [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')]+\
-                [LinesCollection([s for s in root.to_list()], color = 'forestgreen')]
-        ))
-        locate_point_scenes.append(Scene(
-            lines=deleted_set_scenes[0].lines + \
-                    root.polygon.to_scene().lines + \
-                    [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-                    [LinesCollection([s for s in root.to_list()], color='forestgreen')]
-        ))
+        if root.polygon == polygon:
+            locate_point_scenes.append(Scene(
+                lines=deleted_set_scenes[0].lines + \
+                        root.polygon.to_scene().lines + \
+                        [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+                        [LinesCollection([s for s in root.to_list()], color='limegreen')],
+                points=[PointsCollection([p.to_tuple()], color='green')]
+            ))
+        else:
+            locate_point_scenes.append(Scene(
+                lines=deleted_set_scenes[0].lines + \
+                        polygon.to_scene().lines + \
+                        [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+                        [LinesCollection([s for s in root.to_list()], color='lightcoral')],
+                points=[PointsCollection([p.to_tuple()], color='red')]
+            ))
 
         return locate_point_scenes
 
 
 
 
-
-
-
-
-
-
-    #ppppp = delete_vertex(S[0], vertices)
-    #ppppp.actions()
-    kp_location_scenes = []
-    root = bt['triangle']
-    for i in range(7):
-        lc = [LinesCollection(bt['triangle'].to_list(), color = 'green')]
-        for child in root.children:
-            lc += [LinesCollection(child.to_list())]
-        lc += [LinesCollection(root.to_list(), color = 'red')]
-        kp_location_scenes.append(Scene(lines = lc))
-        for child in root.children:
-            if len(child.children)>0:
-                root = child
-
-    #plot = Plot(kp_location_scenes)
-    #plot = Plot(kirkpatrick_scenes)
-    plot = Plot(locate_point(Point(0.15, 2.57)))
+    loc_scenes = []
+    for p in points:
+        loc_scenes += locate_point(p)
+    plot = Plot(kirkpatrick_scenes + loc_scenes)
     #plot.add_scene(Scene(lines=ppppp.to_scene(color = 'crimson').lines + left.to_scene().lines + right.to_scene().lines + bottom.to_scene().lines))
     plot.draw()

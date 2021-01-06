@@ -50,6 +50,6 @@ if __name__ == "__main__":
     test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow')]))
     test_plot.add_scene(Scene(lines=[LinesCollection(p['right'].sides, color = 'green')]))
     test_plot.add_scene(Scene(lines=[LinesCollection(p['bottom'].sides, color = 'blue')]))"""
-    Kirkpatricick(test_polygon)
+    Kirkpatricick(test_polygon, [Point(0.01, 2.56), Point(5, 0.25)])
     #test_plot.add_scenes(Kirkpatricick(test_polygon))
     #test_plot.draw()
