@@ -373,7 +373,7 @@ def Kirkpatricick(polygon):
         points=[PointsCollection([v.point.to_tuple() for v in vertices])],
         lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()])] + \
               [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-              [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='hotpink')]
+              [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='red')]
     ))
     while len(vertices) > 1:
         polygons = []
