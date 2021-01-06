@@ -145,6 +145,8 @@ def failed_partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_ve
 
     return p
 
+
+
 def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices, vertices):
     point = {'bottom_left': Point(tr_coord[0][0], tr_coord[0][1]),
              'bottom_right': Point(tr_coord[2][0], tr_coord[2][1]),
@@ -170,15 +172,17 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
     if max_l > max_r:
         polygons['left'] = v_copy[max_l:] + v_copy[:max_r+1]
         v_copy = v_copy[max_r:max_l+1]
+        max_r = 0
     elif max_l < max_r:
         polygons['left'] = v_copy[max_l:max_r+1]
         v_copy = v_copy[max_r:] + v_copy[:max_l+1]
-    else:
+        max_r = max_l+1
+    else: #TODO problem albo całe v_copy albo jeden element
         polygons['left'] = v_copy
         v_copy = [v_copy[max_r]]
 
     #BOTTOM
-    max_l = 0
+    max_l = max_r
     max_r = 0
 
     for i in range(len(v_copy)):
@@ -190,7 +194,7 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
 
     if max_l < max_r:
         polygons['bottom'] = v_copy[max_l:max_r+1]
-        v_copy = v_copy[:max_l+1] + v_copy[max_r:]
+        v_copy = v_copy[:max_l] + v_copy[max_r:]
     elif max_l > max_r:
         polygons['bottom'] = v_copy[max_l:] + v_copy[:max_r+1]
         v_copy = v_copy[max_l:max_r+1]
@@ -224,6 +228,7 @@ def partition_triangle_into_polygons(triangle, tr_center, tr_coord, ch_vertices,
          }
 
     return p
+
 
 def Kirkpatricick(polygon):
     #
@@ -309,22 +314,43 @@ def Kirkpatricick(polygon):
     def delete_vertex(to_del_vertex: Vertex, vertices):
         polygon_vertices = []
         for side in list(to_del_vertex.sides):
+            #before_del_triangles = before_del_triangles.union(side.triangles)
             another = side.get_another_vertice(to_del_vertex)
             another.sides.remove(Side(to_del_vertex, another))
             if another in vertices + list(bt['triangle'].vertices):
                 polygon_vertices.append(side.get_another_vertice(to_del_vertex))
         bottom_point = min(polygon_vertices, key =lambda v: (v.point.y, v.point.x))
-        polygon_vertices.remove(bottom_point)
-        def f(b,c):
-            return comparing_f(min_vertex, b, c)
+        #polygon_vertices.remove(bottom_point)
+        def m_ctg(vertice):
+            if vertice.point.y == to_del_vertex.point.y:
+                if vertice.point.x > to_del_vertex.point.x:
+                    return (-1)*float('inf')
+                else:
+                    return float('inf')
+            return (-1)*(vertice.point.x - to_del_vertex.point.x) / (
+                        vertice.point.y - to_del_vertex.point.y)
+        """
         polygon_vertices.sort(key=lambda v: (v.point.x - bottom_point.point.x) / (
                         v.point.y - bottom_point.point.y) , reverse=True)
-        polygon_vertices = [bottom_point] + polygon_vertices
+        """
+
+        polygon_vertices.sort(key=lambda v: (-1, m_ctg(v)) if v.point.y >= to_del_vertex.point.y else (1, m_ctg(v)))
+        #polygon_vertices = [bottom_point] + polygon_vertices
         #if v.point.y - bottom_point.y != 0 else float('inf')
         vertices.remove(to_del_vertex)
         return Polygon(polygon_vertices)
 
-
+    # Sprawdzamy czy trojkaty na siebie nachodza.
+    # Analizujemy każdą możliwą parę rodzic - dziecko,
+    # ponieważ takich par jest zawsze maksymalnie 8 * (8-6),
+    # ze względu na wybierane wierzcholki o stopniu maksymalnym rownym 8.
+    # Powstalych wnęk jest n/18, dla każdej funkcja update_triangles
+    # wykonuje maksymalnie 48 operacji, zatem metoda ta ma zlożonośc O(n).
+    def update_triangles(parents, children):
+        for parent in parents:
+            for child in children:
+                if Triangle.do_overlap(parent, child):
+                    parent.add_child(child)
 
     #
     # Główna pętla tworząca podstawy struktury:
@@ -342,6 +368,7 @@ def Kirkpatricick(polygon):
                 print("not polygons")
                 return
             polygons[-1].actions()
+            update_triangles(polygons[-1].triangles, vertex.triangles)
             if len(vertices) > 3:
                 convex_hull_vertices = graham_scan(vertices)
             else:
@@ -366,12 +393,16 @@ def Kirkpatricick(polygon):
             current_lines += triangle_polygons['left'].to_scene(color='yellow', color2 = 'yellow').lines + \
                 triangle_polygons['right'].to_scene(color = 'green', color2 = 'green').lines + \
                 triangle_polygons['bottom'].to_scene(color='blue', color2 = 'blue').lines
-            #for pol in polygons:
-            #    current_lines += pol.to_scene(color2 = 'crimson').lines
+            for pol in polygons:
+                current_lines += pol.to_scene(color2 = 'crimson').lines
+            """
             current_lines += [LinesCollection([[convex_hull_vertices[ii].point.to_tuple(),
                                    convex_hull_vertices[(ii+1)%len(convex_hull_vertices)].point.to_tuple()]
                                   for ii in range(len(convex_hull_vertices))],
                                  color = 'blueviolet')]
+            """
+            for pol in polygons:
+                current_lines += pol.to_scene(color2 = 'crimson').lines
 
             kirkpatrick_scenes.append(Scene(lines = current_lines, points=[PointsCollection([v.point.to_tuple() for v in vertices.copy()])]))
 

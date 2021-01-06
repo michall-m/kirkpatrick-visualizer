@@ -31,7 +31,44 @@ class Triangle:
             sides.append(Point.to_line(vertices[i].point, vertices[(i+1)%3].point))
         return sides
 
+    def add_child(self, triangle):
+        self.children.append(triangle)
+
+    def is_in_triangle(self, p: Point):
+        a, b, c = [po.point for po in list(self.vertices)]
+        v0 = [c.x - a.x, c.y - a.y]
+        v1 = [b.x - a.x, b.y - a.y]
+        v2 = [p.x - a.x, p.y - a.y]
+        cross = lambda u, v: u[0] * v[1] - u[1] * v[0]
+        u = cross(v2, v0)
+        v = cross(v1, v2)
+        d = cross(v1, v0)
+        if d < 0:
+            u, v, d = -u, -v, -d
+        return u >= 0 and v >= 0 and (u + v) <= d
 
     @property
     def is_leaf(self):
         return self.polygon is not None
+
+    @staticmethod
+    def do_overlap(first, second):
+        for fs in list(first.sides):
+            for ss in list(second.sides):
+                c = False
+                for v1 in fs.vertices:
+                    for v2 in ss.vertices:
+                        if v1 == v2:
+                            c = True
+                if c:
+                    continue
+                if Side.do_intersect(fs, ss):
+                    return True
+        for v in list(first.vertices):
+            if v not in second.vertices and second.is_in_triangle(v.point):
+                return True
+        for v in list(second.vertices):
+            if v not in first.vertices and first.is_in_triangle(v.point):
+                return True
+        return False
+
