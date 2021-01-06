@@ -593,4 +593,4 @@ class Polygon:
         triangles = []
         for tr in self.triangles:
             triangles += tr.to_list()
-        return Scene(lines=[LinesCollection(self.sides, color = color)])
+        return Scene(lines=[LinesCollection(triangles, color = color2), LinesCollection(self.sides, color = color)])

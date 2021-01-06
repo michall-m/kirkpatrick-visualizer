@@ -375,9 +375,13 @@ def Kirkpatricick(polygon):
               [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
               [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='red')]
     ))
+    deleted_set_scenes = []
     while len(vertices) > 1:
         polygons = []
         S = get_independent_set(vertices)
+        deleted_set_scenes.append(Scene(
+            lines=[LinesCollection([s for v in vertices.copy() for tr in v.triangles.copy() for s in tr.to_list()], color = 'lightsteelblue')]
+        ))
         for vertex in S:
             # SCENA PRZED
             kirkpatrick_scenes.append(Scene(
@@ -440,6 +444,72 @@ def Kirkpatricick(polygon):
             if len(vertices) == 1:
                 for vtr in vertices[0].triangles:
                     bt['triangle'].add_child(vtr)
+    deleted_set_scenes.append(Scene(
+        lines=[LinesCollection([s for v in vertices.copy() for tr in v.triangles.copy() for s in tr.to_list()],
+                               color='lightsteelblue')]
+    ))
+
+
+
+    #
+    # Lokalizacja punktu:
+    #
+
+    def locate_point(p: Point):
+        locate_point_scenes = []
+        root = bt['triangle']
+        selected = None
+        i = len(deleted_set_scenes)-1
+        while root.children:
+            locate_point_scenes.append(Scene(
+                lines=deleted_set_scenes[i].lines + \
+                      [LinesCollection([s for child in root.children for s in child.to_list()])] + \
+                      [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')],
+                points=[PointsCollection([p.to_tuple()], color='fuchsia')]
+            ))
+
+            for child in root.children:
+                locate_point_scenes.append(Scene(
+                    lines=deleted_set_scenes[i].lines + \
+                          [LinesCollection([s for rchild in root.children for s in rchild.to_list()])] + \
+                          [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+                          [LinesCollection([s for s in child.to_list()], color='limegreen')],
+                    points=[PointsCollection([p.to_tuple()], color='fuchsia')]
+                ))
+                if child.is_in_triangle(p):
+                    selected = child
+                    break
+            #SCENA
+            locate_point_scenes.append(Scene(
+                lines=deleted_set_scenes[i].lines +\
+                      [LinesCollection([s for child in root.children for s in child.to_list()])] + \
+                      [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] +\
+                      [LinesCollection([s for s in selected.to_list()], color = 'forestgreen')],
+                points=[PointsCollection([p.to_tuple()], color='fuchsia')]
+            ))
+            root = selected
+            i -= 1
+        locate_point_scenes.append(Scene(
+            lines=deleted_set_scenes[i].lines +\
+                root.polygon.to_scene().lines + \
+                [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')]+\
+                [LinesCollection([s for s in root.to_list()], color = 'forestgreen')]
+        ))
+        locate_point_scenes.append(Scene(
+            lines=deleted_set_scenes[0].lines + \
+                    root.polygon.to_scene().lines + \
+                    [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+                    [LinesCollection([s for s in root.to_list()], color='forestgreen')]
+        ))
+
+        return locate_point_scenes
+
+
+
+
+
+
+
 
 
 
@@ -456,7 +526,9 @@ def Kirkpatricick(polygon):
         for child in root.children:
             if len(child.children)>0:
                 root = child
+
     #plot = Plot(kp_location_scenes)
-    plot = Plot(kirkpatrick_scenes)
+    #plot = Plot(kirkpatrick_scenes)
+    plot = Plot(locate_point(Point(0.15, 2.57)))
     #plot.add_scene(Scene(lines=ppppp.to_scene(color = 'crimson').lines + left.to_scene().lines + right.to_scene().lines + bottom.to_scene().lines))
     plot.draw()
