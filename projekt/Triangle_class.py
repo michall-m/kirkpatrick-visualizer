@@ -6,7 +6,7 @@ from projekt.Side_class import Side
 class Triangle:
     def __init__(self, v1: Vertex, v2: Vertex, v3: Vertex, children=[], polygon=None):
         self.vertices = set([v1, v2, v3])
-        self.children = children
+        self.children = set([])
         self.polygon = polygon
         for v in [v1,v2,v3]:
             v.add_triangle(self)
@@ -32,7 +32,7 @@ class Triangle:
         return sides
 
     def add_child(self, triangle):
-        self.children.append(triangle)
+        self.children.add(triangle)
 
     def is_in_triangle(self, p: Point):
         a, b, c = [po.point for po in list(self.vertices)]
@@ -53,6 +53,7 @@ class Triangle:
 
     @staticmethod
     def do_overlap(first, second):
+        c = False
         for fs in list(first.sides):
             for ss in list(second.sides):
                 c = False

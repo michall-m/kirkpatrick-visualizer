@@ -4,8 +4,8 @@ from projekt.Point_class import Point
 class Vertex:
     def __init__(self, point: Point):
         self.point = point
-        self.triangles = set()
-        self.sides = set()
+        self.triangles = set([])
+        self.sides = set([])
 
 
 
@@ -21,6 +21,11 @@ class Vertex:
 
     def add_triangle(self, triangle):
         self.triangles.add(triangle)
+
+    def remove_triangle(self, triangle):
+        if triangle in self.triangles:
+            self.triangles.remove(triangle)
+
 
     def add_side(self, side):
         self.sides.add(side)

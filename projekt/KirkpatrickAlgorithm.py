@@ -257,6 +257,7 @@ def Kirkpatricick(polygon):
                       'bottom':[],
                       'polygon':[]
                       }
+
     """
     for tr in left.triangles:
         triangles_vizu['left'] += tr.to_list()
@@ -277,6 +278,7 @@ def Kirkpatricick(polygon):
                                       LinesCollection(triangles_vizu['polygon'], color = 'crimson')
                                       ]))
     #kirkpatrick_scenes += polygon.scenes
+    tPo = Polygon(polygon.vertices.copy)
 
     #def add_kirkpatrick_scene(P, l, r, b): #polygons list, left, right, bottom
 
@@ -347,8 +349,11 @@ def Kirkpatricick(polygon):
     # Powstalych wnęk jest n/18, dla każdej funkcja update_triangles
     # wykonuje maksymalnie 48 operacji, zatem metoda ta ma zlożonośc O(n).
     def update_triangles(parents, children):
-        for parent in parents:
-            for child in children:
+        for child in list(children):
+            for v in list(child.vertices):
+                v.remove_triangle(child)
+        for parent in list(parents):
+            for child in list(children):
                 if Triangle.do_overlap(parent, child):
                     parent.add_child(child)
 
@@ -368,7 +373,7 @@ def Kirkpatricick(polygon):
                 print("not polygons")
                 return
             polygons[-1].actions()
-            update_triangles(polygons[-1].triangles, vertex.triangles)
+            update_triangles(polygons[-1].triangles.copy(), vertex.triangles.copy())
             if len(vertices) > 3:
                 convex_hull_vertices = graham_scan(vertices)
             else:
@@ -405,12 +410,26 @@ def Kirkpatricick(polygon):
                 current_lines += pol.to_scene(color2 = 'crimson').lines
 
             kirkpatrick_scenes.append(Scene(lines = current_lines, points=[PointsCollection([v.point.to_tuple() for v in vertices.copy()])]))
-
+            if len(vertices) == 1:
+                for vtr in vertices[0].triangles:
+                    bt['triangle'].add_child(vtr)
 
 
 
     #ppppp = delete_vertex(S[0], vertices)
     #ppppp.actions()
+    kp_location_scenes = []
+    root = bt['triangle']
+    for i in range(7):
+        lc = [LinesCollection(bt['triangle'].to_list(), color = 'green')]
+        for child in root.children:
+            lc += [LinesCollection(child.to_list())]
+        lc += [LinesCollection(root.to_list(), color = 'red')]
+        kp_location_scenes.append(Scene(lines = lc))
+        for child in root.children:
+            if len(child.children)>0:
+                root = child
+    #plot = Plot(kp_location_scenes)
     plot = Plot(kirkpatrick_scenes)
     #plot.add_scene(Scene(lines=ppppp.to_scene(color = 'crimson').lines + left.to_scene().lines + right.to_scene().lines + bottom.to_scene().lines))
     plot.draw()
