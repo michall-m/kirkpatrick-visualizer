@@ -589,7 +589,9 @@ class Polygon:
         # self.PrepareForTriangulation()
 
 
-    def to_scene(self, triangles = False, color = 'dodgerblue', color2 = 'dodgerblue'):
+    def to_scene(self, triangles = True, color = 'dodgerblue', color2 = 'dodgerblue'):
+        if not triangles:
+            return Scene(lines=[LinesCollection(self.sides, color=color)])
         triangles = []
         for tr in self.triangles:
             triangles += tr.to_list()

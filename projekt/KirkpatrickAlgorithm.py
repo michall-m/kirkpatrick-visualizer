@@ -371,9 +371,10 @@ def Kirkpatricick(polygon, points):
         triangle_polygons[k].actions()
     kirkpatrick_scenes.append(Scene(
         points=[PointsCollection([v.point.to_tuple() for v in vertices])],
-        lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()])] + \
+        lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()], color = 'dodgerblue')] + \
               [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-              [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='red')]
+              [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='mistyrose')] + \
+              [LinesCollection([s for s in polygon.sides], color='red')]
     ))
     deleted_set_scenes = []
     while len(vertices) > 1:
@@ -387,7 +388,7 @@ def Kirkpatricick(polygon, points):
             kirkpatrick_scenes.append(Scene(
                 points=[PointsCollection([v.point.to_tuple() for v in vertices])] + \
                        [PointsCollection([vertex.point.to_tuple()], color='red')],
-                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()])] +\
+                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()],  color = 'dodgerblue')] +\
                         [LinesCollection([s for s in bt['triangle'].to_list()], color = 'navy')] +\
                         [LinesCollection([s for ctr in vertex.triangles for s in ctr.to_list()], color = 'orangered')]
             ))
@@ -437,7 +438,7 @@ def Kirkpatricick(polygon, points):
             #SCENA PO
             kirkpatrick_scenes.append(Scene(
                 points=[PointsCollection([v.point.to_tuple() for v in vertices])],
-                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()])] + \
+                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()],  color = 'dodgerblue')] + \
                       [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
                       [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color = 'darkgreen')]
                 ))
@@ -492,7 +493,7 @@ def Kirkpatricick(polygon, points):
         if root.polygon == polygon:
             locate_point_scenes.append(Scene(
                 lines=deleted_set_scenes[0].lines + \
-                        root.polygon.to_scene().lines + \
+                        root.polygon.to_scene(triangles=False).lines + \
                         [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
                         [LinesCollection([s for s in root.to_list()], color='limegreen')],
                 points=[PointsCollection([p.to_tuple()], color='green')]
@@ -500,7 +501,7 @@ def Kirkpatricick(polygon, points):
         else:
             locate_point_scenes.append(Scene(
                 lines=deleted_set_scenes[0].lines + \
-                        polygon.to_scene().lines + \
+                        polygon.to_scene(triangles=False).lines + \
                         [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
                         [LinesCollection([s for s in root.to_list()], color='lightcoral')],
                 points=[PointsCollection([p.to_tuple()], color='red')]
