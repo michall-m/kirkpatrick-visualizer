@@ -1,6 +1,6 @@
 from projekt import *
 from projekt.ConvexHull import *
-from projekt.main import *
+from projekt.GUI import *
 from projekt.Side_class import Side
 
 def ch_triangle(ch_vertices, delta = 1):

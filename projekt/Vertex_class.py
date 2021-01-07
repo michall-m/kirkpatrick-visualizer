@@ -16,6 +16,13 @@ class Vertex:
     def __hash__(self):
         return hash(self.point)
 
+    def __gt__(self,other):
+        if not isinstance(other,Vertex):
+            return False
+        if self.point.x<other.point.x:
+            return True
+        return False
+
     def __str__(self):
         return self.point.to_tuple()
 

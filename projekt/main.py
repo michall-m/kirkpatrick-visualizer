@@ -1,294 +1,55 @@
-"""
-from projekt.Polygon_class import Polygon
-from projekt.Vertex_class import Vertex
-from projekt.Point_class import Point
 from projekt.Triangle_class import Triangle
-"""
-
-# Narzędzie jest oparte o kilka zewnętrznych bibliotek, które potrzebujemy najpierw zaimportować.
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.collections as mcoll
-
-import matplotlib.colors as mcolors
-from matplotlib.widgets import Button
-import json as js
-
-# Parametr określający jak blisko (w odsetku całego widocznego zakresu) punktu początkowego
-# wielokąta musimy kliknąć, aby go zamknąć.
-TOLERANCE = 0.15
+from projekt.Point_class import Point
+from projekt.Vertex_class import Vertex
+from projekt.GUI import *
+from projekt.Polygon_class import Polygon
+from projekt.ConvexHull import graham_scan
+from projekt.KirkpatrickAlgorithm import *
 
 
-def dist(point1, point2):
-    return np.sqrt(np.power(point1[0] - point2[0], 2) + np.power(point1[1] - point2[1], 2))
-
-
-# Klasa ta trzyma obecny stan wykresu oraz posiada metody, które mają zostać wykonane
-# po naciśnięciu przycisków.
-class _Button_callback(object):
-    def __init__(self, scenes):
-        self.i = 0
-        self.scenes = scenes
-        self.adding_points = False
-        self.added_points = []
-        self.adding_lines = False
-        self.added_lines = []
-        self.adding_rects = False
-        self.added_rects = []
-
-    def set_axes(self, ax):
-        self.ax = ax
-
-    # Metoda ta obsługuje logikę przejścia do następnej sceny.
-    def next(self, event):
-        print('n')
-        self.i = (self.i + 1) % len(self.scenes)
-        self.draw(autoscaling=True)
-        print('n')
-
-    # Metoda ta obsługuje logikę powrotu do poprzedniej sceny.
-    def prev(self, event):
-        print('p')
-        self.i = (self.i - 1) % len(self.scenes)
-        self.draw(autoscaling=True)
-        print('p')
-
-    # Metoda ta aktywuje funkcję rysowania punktów wyłączając równocześnie rysowanie
-    # odcinków i wielokątów.
-    def add_point(self, event):
-        print('ap')
-        self.adding_points = not self.adding_points
-        self.new_line_point = None
-        if self.adding_points:
-            self.adding_lines = False
-            self.adding_rects = False
-            self.added_points.append(PointsCollection([]))
-        print('ap')
-
-    # Metoda ta aktywuje funkcję rysowania odcinków wyłączając równocześnie
-    # rysowanie punktów i wielokątów.
-    def add_line(self, event):
-        print('al')
-        self.adding_lines = not self.adding_lines
-        self.new_line_point = None
-        if self.adding_lines:
-            self.adding_points = False
-            self.adding_rects = False
-            self.added_lines.append(LinesCollection([]))
-        print('al')
-
-    # Metoda ta aktywuje funkcję rysowania wielokątów wyłączając równocześnie
-    # rysowanie punktów i odcinków.
-    def add_rect(self, event):
-        print('ar')
-        self.adding_rects = not self.adding_rects
-        self.new_line_point = None
-        if self.adding_rects:
-            self.adding_points = False
-            self.adding_lines = False
-            self.new_rect()
-        print('ar')
-
-    def new_rect(self):
-        self.added_rects.append(LinesCollection([]))
-        self.rect_points = []
-
-    # Metoda odpowiedzialna za właściwą logikę rysowania nowych elementów. W
-    # zależności od włączonego trybu dodaje nowe punkty, początek, koniec odcinka
-    # lub poszczególne wierzchołki wielokąta. Istnieje ciekawa logika sprawdzania
-    # czy dany punkt jest domykający dla danego wielokąta. Polega ona na tym, że
-    # sprawdzamy czy odległość nowego punktu od początkowego jest większa od
-    # średniej długości zakresu pomnożonej razy parametr TOLERANCE.
-    def on_click(self, event):
-        if event.inaxes != self.ax:
-            return
-        new_point = (event.xdata, event.ydata)
-        if self.adding_points:
-            self.added_points[-1].add_points([new_point])
-            self.draw(autoscaling=False)
-        elif self.adding_lines:
-            if self.new_line_point is not None:
-                self.added_lines[-1].add([self.new_line_point, new_point])
-                self.new_line_point = None
-                self.draw(autoscaling=False)
-            else:
-                self.new_line_point = new_point
-        elif self.adding_rects:
-            if len(self.rect_points) == 0:
-                self.rect_points.append(new_point)
-            elif len(self.rect_points) == 1:
-                self.added_rects[-1].add([self.rect_points[-1], new_point])
-                self.rect_points.append(new_point)
-                self.draw(autoscaling=False)
-            elif len(self.rect_points) > 1:
-                if dist(self.rect_points[0], new_point) < (
-                        np.mean([self.ax.get_xlim(), self.ax.get_ylim()]) * TOLERANCE):
-                    self.added_rects[-1].add([self.rect_points[-1], self.rect_points[0]])
-                    self.new_rect()
-                else:
-                    self.added_rects[-1].add([self.rect_points[-1], new_point])
-                    self.rect_points.append(new_point)
-                self.draw(autoscaling=False)
-
-    # Metoda odpowiedzialna za narysowanie całego wykresu. Warto zauważyć,
-    # że zaczyna się ona od wyczyszczenia jego wcześniejszego stanu. Istnieje w
-    # niej nietrywialna logika zarządzania zakresem wykresu, tak żeby, w zależności
-    # od ustawionego parametru autoscaling, uniknąć sytuacji, kiedy dodawanie
-    # nowych punktów przy brzegu obecnie widzianego zakresu powoduje niekorzystne
-    # przeskalowanie.
-    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)]):
-        if not autoscaling:
-            xlim = self.ax.get_xlim()
-            # print(xlim)
-            ylim = self.ax.get_ylim()
-        self.ax.clear()
-        for collection in (self.scenes[self.i].points + self.added_points):
-            if len(collection.points) > 0:
-                self.ax.scatter(*zip(*(np.array(collection.points))), **collection.kwargs)
-        for collection in (self.scenes[self.i].lines + self.added_lines + self.added_rects):
-            self.ax.add_collection(collection.get_collection())
-        self.ax.autoscale(autoscaling)
-        if not autoscaling:
-            self.ax.set_xlim(xlim)
-            self.ax.set_ylim(ylim)
-        if plot_range != [(None, None), (None, None)]:
-            self.ax.set_xlim(plot_range[0])
-            self.ax.set_ylim(plot_range[1])
-        plt.draw()
-
-
-# Klasa Scene odpowiada za przechowywanie elementów, które mają być
-# wyświetlane równocześnie. Konkretnie jest to lista PointsCollection i
-# LinesCollection.
-class Scene:
-    def __init__(self, points=[], lines=[]):
-        self.points = points
-        self.lines = lines
-
-
-# Klasa PointsCollection gromadzi w sobie punkty jednego typu, a więc takie,
-# które zostaną narysowane w takim samym kolorze i stylu. W konstruktorze
-# przyjmuje listę punktów rozumianych jako pary współrzędnych (x, y). Parametr
-# kwargs jest przekazywany do wywołania funkcji z biblioteki MatPlotLib przez
-# co użytkownik może podawać wszystkie parametry tam zaproponowane.
-class PointsCollection:
-    def __init__(self, points, **kwargs):
-        self.points = points
-        self.kwargs = kwargs
-
-    def add_points(self, points):
-        self.points = self.points + points
-
-
-# Klasa LinesCollection podobnie jak jej punktowy odpowiednik gromadzi
-# odcinki tego samego typu. Tworząc ją należy podać listę linii, gdzie każda
-# z nich jest dwuelementową listą punktów – par (x, y). Parametr kwargs jest
-# przekazywany do wywołania funkcji z biblioteki MatPlotLib przez co użytkownik
-# może podawać wszystkie parametry tam zaproponowane.
-class LinesCollection:
-    def __init__(self, lines, **kwargs):
-        self.lines = lines
-        self.kwargs = kwargs
-
-    def add(self, line):
-        self.lines.append(line)
-
-    def get_collection(self):
-        return mcoll.LineCollection(self.lines, **self.kwargs)
-
-
-# Klasa Plot jest najważniejszą klasą w całym programie, ponieważ agreguje
-# wszystkie przygotowane sceny, odpowiada za stworzenie wykresu i przechowuje
-# referencje na przyciski, dzięki czemu nie będą one skasowane podczas tzw.
-# garbage collectingu.
-class Plot:
-    def __init__(self, scenes=[Scene()], points=[], lines=[], json=None):
-        if json is None:
-            self.scenes = scenes
-            if points or lines:
-                self.scenes[0].points = points
-                self.scenes[0].lines = lines
-        else:
-            self.scenes = [Scene([PointsCollection(pointsCol) for pointsCol in scene["points"]],
-                                 [LinesCollection(linesCol) for linesCol in scene["lines"]])
-                           for scene in js.loads(json)]
-
-    # Ta metoda ma szczególne znaczenie, ponieważ konfiguruje przyciski i
-    # wykonuje tym samym dość skomplikowaną logikę. Zauważmy, że konfigurując każdy
-    # przycisk podajemy referencję na metodę obiektu _Button_callback, która
-    # zostanie wykonana w momencie naciśnięcia.
-    def __configure_buttons(self):
-        plt.subplots_adjust(bottom=0.2)
-        ax_prev = plt.axes([0.6, 0.05, 0.15, 0.075])
-        ax_next = plt.axes([0.76, 0.05, 0.15, 0.075])
-        ax_add_point = plt.axes([0.44, 0.05, 0.15, 0.075])
-        ax_add_line = plt.axes([0.28, 0.05, 0.15, 0.075])
-        ax_add_rect = plt.axes([0.12, 0.05, 0.15, 0.075])
-        b_next = Button(ax_next, 'Następny')
-        b_next.on_clicked(self.callback.next)
-        b_prev = Button(ax_prev, 'Poprzedni')
-        b_prev.on_clicked(self.callback.prev)
-        b_add_point = Button(ax_add_point, 'Dodaj punkt')
-        b_add_point.on_clicked(self.callback.add_point)
-        b_add_line = Button(ax_add_line, 'Dodaj linię')
-        b_add_line.on_clicked(self.callback.add_line)
-        b_add_rect = Button(ax_add_rect, 'Dodaj figurę')
-        b_add_rect.on_clicked(self.callback.add_rect)
-        return [b_prev, b_next, b_add_point, b_add_line, b_add_rect]
-
-    def add_scene(self, scene):
-        self.scenes.append(scene)
-
-    def add_scenes(self, scenes):
-        self.scenes = self.scenes + scenes
-
-    # Metoda toJson() odpowiada za zapisanie stanu obiektu do ciągu znaków w
-    # formacie JSON.
-    def toJson(self):
-        return js.dumps([{"points": [np.array(pointCol.points).tolist() for pointCol in scene.points],
-                          "lines": [linesCol.lines for linesCol in scene.lines]}
-                         for scene in self.scenes])
-
-        # Metoda ta zwraca punkty dodane w trakcie rysowania.
-
-    def get_added_points(self):
-        if self.callback:
-            return self.callback.added_points
-        else:
-            return None
-
-    # Metoda ta zwraca odcinki dodane w trakcie rysowania.
-    def get_added_lines(self):
-        if self.callback:
-            return self.callback.added_lines
-        else:
-            return None
-
-    # Metoda ta zwraca wielokąty dodane w trakcie rysowania.
-    def get_added_figure(self):
-        if self.callback:
-            return self.callback.added_rects
-        else:
-            return None
-
-    # Metoda ta zwraca punkty, odcinki i wielokąty dodane w trakcie rysowania
-    # jako scenę.
-    def get_added_elements(self):
-        if self.callback:
-            return Scene(self.callback.added_points, self.callback.added_lines + self.callback.added_rects)
-        else:
-            return None
-
-    # Główna metoda inicjalizująca wyświetlanie wykresu.
-    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)]):
-        plt.close()
-        fig = plt.figure()
-        self.callback = _Button_callback(self.scenes)
-        self.widgets = self.__configure_buttons()
-        ax = plt.axes(autoscale_on=False)
-        self.callback.set_axes(ax)
-        fig.canvas.mpl_connect('button_press_event', self.callback.on_click)
-        plt.show()
-        self.callback.draw(autoscaling=autoscaling, plot_range=plot_range)
-
-
+if __name__ == "__main__":
+    """
+    plot = Plot(points=[PointsCollection([(1, 2), (3, 1.5), (2, -1)]),
+                        PointsCollection([(5, -2), (2, 2), (-2, -1)], color='green', marker="^")],
+                lines=[LinesCollection([[(1, 2), (2, 3)], [(0, 1), (1, 0)]])])
+    plot.draw()
+    """
+    test_data = [[2.00289818548387, 4.782475490196079],
+                 [-1.74710181451613, 9.132965686274508],
+                 [-3.27935987903226, 6.559436274509805],
+                 [-4.85194052419355, 8.70404411764706],
+                 [-8.118069556451614, 4.0471813725490176],
+                 [-4.89226310483871, -0.3645833333333339],
+                 [-2.7148437500000018, 1.2285539215686274],
+                 [-4.932585685483872, 3.0055147058823533],
+                 [-2.513230846774194, 4.476102941176469],
+                 [-1.2229082661290338, -0.303308823529413],
+                 [-3.92452116935484, -3.3057598039215694],
+                 [-7.110005040322582, -1.344975490196079],
+                 [-8.239037298387098, -5.3278186274509824],
+                 [-4.730972782258066, -8.943014705882355],
+                 [-2.02935987903226, -5.6341911764705905],
+                 [0.1883820564516121, -9.065563725490197],
+                 [2.365801411290322, -4.776348039215687],
+                 [-0.09387600806451779, -6.124387254901963]]
+    test_vertices = [Vertex(Point(p[0],p[1])) for p in test_data]
+    gs = graham_scan(test_vertices)
+    t = ch_triangle(gs)
+    #p = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, test_vertices)
+    test_polygon = Polygon(test_vertices)
+    test_polygon.actions()
+    test_plot = Plot(test_polygon.scenes)
+    """
+    test_plot.add_scene(Scene(lines=[LinesCollection(test_polygon.sides), LinesCollection(t['triangle'].to_list(), color = 'blue')]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow'),
+                                     LinesCollection(p['right'].sides, color = 'green'),
+                                     LinesCollection(p['bottom'].sides, color = 'blue')#,
+                                     #LinesCollection(test_polygon.sides),
+                                     #LinesCollection([[gs[i].point.to_tuple(), gs[(i+1)%len(gs)].point.to_tuple()] for i in range(len(gs))], color = 'red')
+                                     ]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow')]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['right'].sides, color = 'green')]))
+    test_plot.add_scene(Scene(lines=[LinesCollection(p['bottom'].sides, color = 'blue')]))"""
+    Kirkpatricick(test_polygon, [Point(0.01, 2.56), Point(5, 0.25)])
+    #test_plot.add_scenes(Kirkpatricick(test_polygon))
+    #test_plot.draw()
