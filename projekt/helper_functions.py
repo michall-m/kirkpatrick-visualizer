@@ -20,7 +20,7 @@ def compareKey2(key):
     return key[0].point.y
 
 
-def binary_searchleftmost(arr,val,left,right):
+def binary_searchleftmost(arr, val, left, right):
     if left==right:
         if arr[left][0].point.y == val:
             return left
@@ -28,6 +28,6 @@ def binary_searchleftmost(arr,val,left,right):
             return -1
     (mid) = (int)((left+right)/2)
     if arr[mid][0].point.y < val:
-        return binary_searchleftmost(arr,val,mid+1,right)
+        return binary_searchleftmost(arr, val, mid+1, right)
     else:
-        return binary_searchleftmost(arr,val,left,mid)
+        return binary_searchleftmost(arr, val, left, mid)

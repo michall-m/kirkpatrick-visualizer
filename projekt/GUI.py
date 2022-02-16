@@ -1,10 +1,3 @@
-"""
-from projekt.Polygon_class import Polygon
-from projekt.Vertex_class import Vertex
-from projekt.Point_class import Point
-from projekt.Triangle_class import Triangle
-"""
-
 # Narzędzie jest oparte o kilka zewnętrznych bibliotek, które potrzebujemy najpierw zaimportować.
 import numpy as np
 import matplotlib.pyplot as plt
@@ -290,5 +283,9 @@ class Plot:
         fig.canvas.mpl_connect('button_press_event', self.callback.on_click)
         plt.show()
         self.callback.draw(autoscaling=autoscaling, plot_range=plot_range)
+
+
+
+
 
 

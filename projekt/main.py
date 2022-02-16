@@ -1,19 +1,18 @@
-from projekt.Triangle_class import Triangle
-from projekt.Point_class import Point
-from projekt.Vertex_class import Vertex
+from projekt.Triangle import Triangle
+from projekt.Point import Point
+from projekt.Vertex import Vertex
 from projekt.GUI import *
-from projekt.Polygon_class import Polygon
+from projekt.Polygon import Polygon
 from projekt.ConvexHull import graham_scan
 from projekt.KirkpatrickAlgorithm import *
+from projekt.DrawPolygon import *
+from multiprocessing import Process
+from time import sleep
 
 
 if __name__ == "__main__":
     """
-    plot = Plot(points=[PointsCollection([(1, 2), (3, 1.5), (2, -1)]),
-                        PointsCollection([(5, -2), (2, 2), (-2, -1)], color='green', marker="^")],
-                lines=[LinesCollection([[(1, 2), (2, 3)], [(0, 1), (1, 0)]])])
-    plot.draw()
-    """
+    Przykładowy wielokat niemonotoniczny:
     test_data = [[2.00289818548387, 4.782475490196079],
                  [-1.74710181451613, 9.132965686274508],
                  [-3.27935987903226, 6.559436274509805],
@@ -32,24 +31,13 @@ if __name__ == "__main__":
                  [0.1883820564516121, -9.065563725490197],
                  [2.365801411290322, -4.776348039215687],
                  [-0.09387600806451779, -6.124387254901963]]
-    test_vertices = [Vertex(Point(p[0],p[1])) for p in test_data]
-    gs = graham_scan(test_vertices)
-    t = ch_triangle(gs)
-    #p = partition_triangle_into_polygons(t['triangle'], t['tr_center'], t['tr_coord'], gs, test_vertices)
-    test_polygon = Polygon(test_vertices)
-    test_polygon.actions()
-    test_plot = Plot(test_polygon.scenes)
     """
-    test_plot.add_scene(Scene(lines=[LinesCollection(test_polygon.sides), LinesCollection(t['triangle'].to_list(), color = 'blue')]))
-    test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow'),
-                                     LinesCollection(p['right'].sides, color = 'green'),
-                                     LinesCollection(p['bottom'].sides, color = 'blue')#,
-                                     #LinesCollection(test_polygon.sides),
-                                     #LinesCollection([[gs[i].point.to_tuple(), gs[(i+1)%len(gs)].point.to_tuple()] for i in range(len(gs))], color = 'red')
-                                     ]))
-    test_plot.add_scene(Scene(lines=[LinesCollection(p['left'].sides, color = 'yellow')]))
-    test_plot.add_scene(Scene(lines=[LinesCollection(p['right'].sides, color = 'green')]))
-    test_plot.add_scene(Scene(lines=[LinesCollection(p['bottom'].sides, color = 'blue')]))"""
-    Kirkpatricick(test_polygon, [Point(0.01, 2.56), Point(5, 0.25)])
-    #test_plot.add_scenes(Kirkpatricick(test_polygon))
-    #test_plot.draw()
+    tdp = DrawPolygon('test15')
+    if not tdp.exists:
+        p = Process(target=tdp.draw())
+        p.start()
+        p.join()
+        tdp.save_changes()
+    tdp.generate_data()
+    tdp.plot = Plot(Kirkpatrick(tdp.main_polygon, tdp.points, diagonals=tdp.diagonals))
+    tdp.plot.draw()

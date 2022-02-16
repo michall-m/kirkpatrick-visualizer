@@ -1,5 +1,5 @@
 from functools import cmp_to_key
-from projekt.Point_class import Point
+from projekt.Point import Point
 
 
 def comparing_f(a, b, c, e=0):
@@ -8,9 +8,7 @@ def comparing_f(a, b, c, e=0):
     r = c.point
     if (b == c):
         return 0
-        # print ("Equal")
     orient = Point.orientation(p, q, r, epsilon=e)
-    # print("a: ", a, "   b: ", b, "   c: ", c, "    orient:",orientation)
     if orient == 1:
         # print("True")
         return 1
