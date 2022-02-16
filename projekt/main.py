@@ -1,3 +1,5 @@
+import time
+
 from projekt.KirkpatrickAlgorithm import *
 from projekt.DrawPolygon import *
 from multiprocessing import Process
@@ -27,7 +29,7 @@ if __name__ == "__main__":
     """
     visualization = DrawPolygon('test1')
     if not visualization.exists:
-        p = Process(target=visualization.draw())
+        p = Process(target=visualization.draw(init_config=True))
         p.start()
         p.join()
         visualization.save_changes()

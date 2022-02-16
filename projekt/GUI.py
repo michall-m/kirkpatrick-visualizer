@@ -34,53 +34,43 @@ class _Button_callback(object):
 
     # Metoda ta obsługuje logikę przejścia do następnej sceny.
     def next(self, event):
-        print('n')
         self.i = (self.i + 1) % len(self.scenes)
         self.draw(autoscaling=True)
-        print('n')
 
     # Metoda ta obsługuje logikę powrotu do poprzedniej sceny.
     def prev(self, event):
-        print('p')
         self.i = (self.i - 1) % len(self.scenes)
         self.draw(autoscaling=True)
-        print('p')
 
     # Metoda ta aktywuje funkcję rysowania punktów wyłączając równocześnie rysowanie
     # odcinków i wielokątów.
     def add_point(self, event):
-        print('ap')
         self.adding_points = not self.adding_points
         self.new_line_point = None
         if self.adding_points:
             self.adding_lines = False
             self.adding_rects = False
             self.added_points.append(PointsCollection([]))
-        print('ap')
 
     # Metoda ta aktywuje funkcję rysowania odcinków wyłączając równocześnie
     # rysowanie punktów i wielokątów.
     def add_line(self, event):
-        print('al')
         self.adding_lines = not self.adding_lines
         self.new_line_point = None
         if self.adding_lines:
             self.adding_points = False
             self.adding_rects = False
             self.added_lines.append(LinesCollection([]))
-        print('al')
 
     # Metoda ta aktywuje funkcję rysowania wielokątów wyłączając równocześnie
     # rysowanie punktów i odcinków.
     def add_rect(self, event):
-        print('ar')
         self.adding_rects = not self.adding_rects
         self.new_line_point = None
         if self.adding_rects:
             self.adding_points = False
             self.adding_lines = False
             self.new_rect()
-        print('ar')
 
     def new_rect(self):
         self.added_rects.append(LinesCollection([]))
@@ -129,11 +119,7 @@ class _Button_callback(object):
     # od ustawionego parametru autoscaling, uniknąć sytuacji, kiedy dodawanie
     # nowych punktów przy brzegu obecnie widzianego zakresu powoduje niekorzystne
     # przeskalowanie.
-    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)]):
-        if not autoscaling:
-            xlim = self.ax.get_xlim()
-            # print(xlim)
-            ylim = self.ax.get_ylim()
+    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)], init_draw=False):
         self.ax.clear()
         for collection in (self.scenes[self.i].points + self.added_points):
             if len(collection.points) > 0:
@@ -141,14 +127,9 @@ class _Button_callback(object):
         for collection in (self.scenes[self.i].lines + self.added_lines + self.added_rects):
             self.ax.add_collection(collection.get_collection())
         self.ax.autoscale(autoscaling)
-        if not autoscaling:
-            self.ax.set_xlim(xlim)
-            self.ax.set_ylim(ylim)
-        if plot_range != [(None, None), (None, None)]:
-            self.ax.set_xlim(plot_range[0])
-            self.ax.set_ylim(plot_range[1])
-        plt.axis('off')
-        plt.draw()
+        #plt.axis('off')
+        if not init_draw:
+            plt.draw()
 
 
 # Klasa Scene odpowiada za przechowywanie elementów, które mają być
@@ -211,7 +192,7 @@ class Plot:
     # wykonuje tym samym dość skomplikowaną logikę. Zauważmy, że konfigurując każdy
     # przycisk podajemy referencję na metodę obiektu _Button_callback, która
     # zostanie wykonana w momencie naciśnięcia.
-    def __configure_buttons(self, init_config=True):
+    def __configure_buttons(self, init_config=False):
         plt.subplots_adjust(bottom=0.2)
         if init_config:
             ax_add_point = plt.axes([0.44, 0.05, 0.15, 0.075])
@@ -279,19 +260,21 @@ class Plot:
             return None
 
     # Główna metoda inicjalizująca wyświetlanie wykresu.
-    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)]):
+    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)], init_config=False):
         plt.close()
         fig = plt.figure()
         self.callback = _Button_callback(self.scenes)
-        self.widgets = self.__configure_buttons()
-        ax = plt.axes(autoscale_on=False)
+        self.widgets = self.__configure_buttons(init_config=init_config) #kwargs
+        ax = plt.axes(autoscale_on=True)
         self.callback.set_axes(ax)
         fig.canvas.mpl_connect('button_press_event', self.callback.on_click)
         fig.canvas.set_window_title('kirkpatrick algorithm visualization')
-        plt.axis('off')
+        # plt.axis('off')
+        # plt.xlim([-10.1, 10.1])
+        # plt.ylim([-6, 11.8])
+        self.callback.draw(autoscaling=False, plot_range=plot_range)
         plt.show()
-        print("xd")
-        self.callback.draw(autoscaling=autoscaling, plot_range=plot_range)
+        self.callback.draw(autoscaling=False, plot_range=plot_range)
 
 
 
