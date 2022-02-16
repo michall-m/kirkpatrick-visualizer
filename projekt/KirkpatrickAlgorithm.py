@@ -3,31 +3,6 @@ from projekt.ConvexHull import *
 from projekt.GUI import *
 from projekt.Side import Side
 
-def ch_triangle(ch_vertices, delta = 0.3):
-    # first_p = ch_vertices[0].point
-    # min_y = first_p.y
-    # max_y = first_p.y
-    # min_x = first_p.x
-    # max_x = first_p.x
-    #
-    # for v in ch_vertices:
-    #     min_y = min(min_y, v.point.y)
-    #     max_y = max(max_y, v.point.y)
-    #     min_x = min(min_x, v.point.x)
-    #     max_x = max(max_x, v.point.x)
-    #
-    # a = max(max_y-min_y, max_x - min_x)
-    # tr = [(min_x - a/1.05 - delta, min_y - delta/1.05 - 0.0001), (min_x + a/1.05, min_y + 1.05 * a + delta), (min_x + 3.0*a/1.05 + delta, min_y - delta/1.05)]
-    tr = [(-10, -6),  (0, -6 + 10 * sqrt(3)), (10, -6)]
-    triangle = Triangle(Vertex(Point(tr[0][0], tr[0][1])),
-                        Vertex(Point(tr[1][0], tr[1][1])),
-                        Vertex(Point(tr[2][0], tr[2][1])))
-    tr_center = Point((tr[0][0] + tr[2][0]) / 2.0, (tr[0][1] + tr[1][1]) / 2.0)
-    t = {'triangle': triangle,
-         'tr_coord': tr,
-         'tr_center': tr_center
-         }
-    return t
 
 
 
@@ -41,7 +16,7 @@ def partition_triangle_into_polygons(tr_coord, vertices):
                 }
     v_copy = vertices.copy()
 
-    #LEFT
+    # LEFT
     max_l = 0
     max_r = 0
 
@@ -53,18 +28,18 @@ def partition_triangle_into_polygons(tr_coord, vertices):
             max_l = i
 
     if max_l > max_r:
-        polygons['left'] = v_copy[max_l:] + v_copy[:max_r+1]
-        v_copy = v_copy[max_r:max_l+1]
+        polygons['left'] = v_copy[max_l:] + v_copy[:max_r + 1]
+        v_copy = v_copy[max_r:max_l + 1]
         max_r = 0
     elif max_l < max_r:
-        polygons['left'] = v_copy[max_l:max_r+1]
-        v_copy = v_copy[max_r:] + v_copy[:max_l+1]
-        max_r = max_l+1
+        polygons['left'] = v_copy[max_l:max_r + 1]
+        v_copy = v_copy[max_r:] + v_copy[:max_l + 1]
+        max_r = max_l + 1
     else:
         polygons['left'] = v_copy
         v_copy = [v_copy[max_r]]
 
-    #BOTTOM
+    # BOTTOM
     max_l = max_r
     max_r = 0
 
@@ -74,16 +49,16 @@ def partition_triangle_into_polygons(tr_coord, vertices):
             max_r = i
 
     if max_l < max_r:
-        polygons['bottom'] = v_copy[max_l:max_r+1]
+        polygons['bottom'] = v_copy[max_l:max_r + 1]
         v_copy = v_copy[:max_l] + v_copy[max_r:]
     elif max_l > max_r:
-        polygons['bottom'] = v_copy[max_l:] + v_copy[:max_r+1]
-        v_copy = v_copy[max_l:max_r+1]
+        polygons['bottom'] = v_copy[max_l:] + v_copy[:max_r + 1]
+        v_copy = v_copy[max_l:max_r + 1]
     else:
         polygons['bottom'] = v_copy
         v_copy = [v_copy[max_r]]
 
-    #RIGHT
+    # RIGHT
 
     polygons['right'] = v_copy
 
@@ -104,7 +79,7 @@ def partition_triangle_into_polygons(tr_coord, vertices):
     return p
 
 
-def Kirkpatrick(polygon, points, diagonals = None):
+def Kirkpatrick(polygon, points, diagonals=None):
     #
     # Zebranie danych z funkcji pomocniczych
     #
@@ -112,9 +87,14 @@ def Kirkpatrick(polygon, points, diagonals = None):
     if not diagonals:
         diagonals = None
         polygon.sub_polygons += [polygon]
-    gs = graham_scan(polygon.vertices)
-    bt = ch_triangle(gs) #biggest triangle
-    tp = partition_triangle_into_polygons( bt['tr_coord'], polygon.vertices)
+    
+    border_triangle_vertices_coords =  [(-10, -6), (0, -6 + 10 * sqrt(3)), (10, -6)]
+    border_triangle = Triangle(Vertex(Point(border_triangle_vertices_coords[0][0], border_triangle_vertices_coords[0][1])),
+                                          Vertex(Point(border_triangle_vertices_coords[1][0], border_triangle_vertices_coords[1][1])),
+                                          Vertex(Point(border_triangle_vertices_coords[2][0], border_triangle_vertices_coords[2][1])))
+
+
+    tp = partition_triangle_into_polygons(border_triangle_vertices_coords, polygon.vertices)
     left = tp['left']
     right = tp['right']
     bottom = tp['bottom']
@@ -124,7 +104,6 @@ def Kirkpatrick(polygon, points, diagonals = None):
     polygon.actions(diagonals=diagonals)
     polygons = [left, right, bottom, polygon]
 
-
     #
     # Funkcje pomocnicze:
     #
@@ -132,13 +111,13 @@ def Kirkpatrick(polygon, points, diagonals = None):
     # Zbiór wierzchołków niezależnych o maksymalnym stopniu 8
     def get_independent_set(v):
         vertices = set(v)
-        n = len(vertices)//18
+        n = len(vertices) // 18
         vertices_copy = list(vertices.copy())
         marked = {}
         independent_set = []
         for vertex in vertices_copy:
             marked[vertex] = False
-        for vertex in bt['triangle'].vertices:
+        for vertex in border_triangle.vertices:
             marked[vertex] = True
         for vertex in vertices_copy:
             if vertex.get_degree() > 8:
@@ -159,16 +138,17 @@ def Kirkpatrick(polygon, points, diagonals = None):
         for side in list(to_del_vertex.sides):
             another = side.get_another_vertice(to_del_vertex)
             another.sides.remove(Side(to_del_vertex, another))
-            if another in vertices + list(bt['triangle'].vertices):
+            if another in vertices + list(border_triangle.vertices):
                 polygon_vertices.append(side.get_another_vertice(to_del_vertex))
+
         def m_ctg(vertice):
             if vertice.point.y == to_del_vertex.point.y:
                 if vertice.point.x > to_del_vertex.point.x:
-                    return (-1)*float('inf')
+                    return (-1) * float('inf')
                 else:
                     return float('inf')
-            return (-1)*(vertice.point.x - to_del_vertex.point.x) / (
-                        vertice.point.y - to_del_vertex.point.y)
+            return (-1) * (vertice.point.x - to_del_vertex.point.x) / (
+                    vertice.point.y - to_del_vertex.point.y)
 
         polygon_vertices.sort(key=lambda v: (-1, m_ctg(v)) if v.point.y >= to_del_vertex.point.y else (1, m_ctg(v)))
         vertices.remove(to_del_vertex)
@@ -189,7 +169,6 @@ def Kirkpatrick(polygon, points, diagonals = None):
                 if Triangle.do_overlap(parent, child):
                     parent.add_child(child)
 
-
     # Wizualizacja, sceny.
     kirkpatrick_scenes = []
 
@@ -198,35 +177,39 @@ def Kirkpatrick(polygon, points, diagonals = None):
     #
 
     vertices = polygon.vertices.copy()
-    convex_hull_vertices = graham_scan(vertices)
-    triangle_polygons = partition_triangle_into_polygons(bt['tr_coord'],
+    triangle_polygons = partition_triangle_into_polygons(border_triangle_vertices_coords,
                                                          vertices)
     for k in triangle_polygons.keys():
         triangle_polygons[k].actions()
     kirkpatrick_scenes.append(Scene(
         points=[PointsCollection([v.point.to_tuple() for v in vertices])],
-        lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()], color = 'dodgerblue')] + \
-              [LinesCollection([[(-10, -6), (10, -6)], [(10, -6), (0, -6 + 10 * sqrt(3))], [(0, -6 + 10 * sqrt(3)), (-10, -6)]], color = 'navy')] + \
-              # [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+        lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()], color='dodgerblue')] + \
+              [LinesCollection(
+                  [[(-10, -6), (10, -6)], [(10, -6), (0, -6 + 10 * sqrt(3))], [(0, -6 + 10 * sqrt(3)), (-10, -6)]],
+                  color='navy')] + \
+              # [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
               [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='mistyrose')] + \
-              [LinesCollection([s for s in polygon.sides], color='red')] +\
-              [LinesCollection([[v[0].point.to_tuple(), v[1].point.to_tuple()] for v in polygon.additional_diagonals], color = 'red')]
+              [LinesCollection([s for s in polygon.sides], color='red')] + \
+              [LinesCollection([[v[0].point.to_tuple(), v[1].point.to_tuple()] for v in polygon.additional_diagonals],
+                               color='red')]
     ))
     deleted_set_scenes = []
     while len(vertices) > 1:
         polygons = []
         S = get_independent_set(vertices)
         deleted_set_scenes.append(Scene(
-            lines=[LinesCollection([s for v in vertices.copy() for tr in v.triangles.copy() for s in tr.to_list()], color = 'lightsteelblue')]
+            lines=[LinesCollection([s for v in vertices.copy() for tr in v.triangles.copy() for s in tr.to_list()],
+                                   color='lightsteelblue')]
         ))
         for vertex in S:
             # SCENA PRZED
             kirkpatrick_scenes.append(Scene(
                 points=[PointsCollection([v.point.to_tuple() for v in vertices])] + \
                        [PointsCollection([vertex.point.to_tuple()], color='red')],
-                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()],  color = 'dodgerblue')] +\
-                        [LinesCollection([s for s in bt['triangle'].to_list()], color = 'navy')] +\
-                        [LinesCollection([s for ctr in vertex.triangles for s in ctr.to_list()], color = 'orangered')]
+                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()],
+                                       color='dodgerblue')] + \
+                      [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
+                      [LinesCollection([s for ctr in vertex.triangles for s in ctr.to_list()], color='orangered')]
             ))
             if len(vertices) == 1:
                 break
@@ -237,22 +220,21 @@ def Kirkpatrick(polygon, points, diagonals = None):
             polygons[-1].actions()
             update_triangles(polygons[-1].triangles.copy(), vertex.triangles.copy())
 
-            #SCENA PO
+            # SCENA PO
             kirkpatrick_scenes.append(Scene(
                 points=[PointsCollection([v.point.to_tuple() for v in vertices])],
-                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()],  color = 'dodgerblue')] + \
-                      [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-                      [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color = 'darkgreen')]
-                ))
+                lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()],
+                                       color='dodgerblue')] + \
+                      [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
+                      [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='darkgreen')]
+            ))
             if len(vertices) == 1:
                 for vtr in vertices[0].triangles:
-                    bt['triangle'].add_child(vtr)
+                    border_triangle.add_child(vtr)
     deleted_set_scenes.append(Scene(
         lines=[LinesCollection([s for v in vertices.copy() for tr in v.triangles.copy() for s in tr.to_list()],
                                color='lightsteelblue')]
     ))
-
-
 
     #
     # Lokalizacja punktu:
@@ -260,14 +242,14 @@ def Kirkpatrick(polygon, points, diagonals = None):
 
     def locate_point(p: Point):
         locate_point_scenes = []
-        root = bt['triangle']
+        root = border_triangle
         selected = None
-        i = len(deleted_set_scenes)-1
+        i = len(deleted_set_scenes) - 1
         while root.children:
             locate_point_scenes.append(Scene(
-                lines=deleted_set_scenes[i].lines +\
-                      [LinesCollection([s for child in root.children for s in child.to_list()])] +\
-                      [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')],
+                lines=deleted_set_scenes[i].lines + \
+                      [LinesCollection([s for child in root.children for s in child.to_list()])] + \
+                      [LinesCollection([s for s in border_triangle.to_list()], color='navy')],
                 points=[PointsCollection([p.to_tuple()], color='orange')]
             ))
 
@@ -275,19 +257,19 @@ def Kirkpatrick(polygon, points, diagonals = None):
                 locate_point_scenes.append(Scene(
                     lines=deleted_set_scenes[i].lines + \
                           [LinesCollection([s for rchild in root.children for s in rchild.to_list()])] + \
-                          [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+                          [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
                           [LinesCollection([s for s in child.to_list()], color='gold')],
                     points=[PointsCollection([p.to_tuple()], color='orange')]
                 ))
                 if child.is_in_triangle(p):
                     selected = child
                     break
-            #SCENA
+            # SCENA
             locate_point_scenes.append(Scene(
-                lines=deleted_set_scenes[i].lines +\
+                lines=deleted_set_scenes[i].lines + \
                       [LinesCollection([s for child in root.children for s in child.to_list()])] + \
-                      [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] +\
-                      [LinesCollection([s for s in selected.to_list()], color = 'forestgreen')],
+                      [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
+                      [LinesCollection([s for s in selected.to_list()], color='forestgreen')],
                 points=[PointsCollection([p.to_tuple()], color='orange')]
             ))
             if selected == root:
@@ -297,33 +279,34 @@ def Kirkpatrick(polygon, points, diagonals = None):
         if root.polygon in polygon.sub_polygons:
             locate_point_scenes.append(Scene(
                 lines=deleted_set_scenes[0].lines + \
-                        root.polygon.to_scene(triangles=False).lines + \
-                        [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-                        [LinesCollection([s for s in root.to_list()], color='limegreen')],
+                      root.polygon.to_scene(triangles=False).lines + \
+                      [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
+                      [LinesCollection([s for s in root.to_list()], color='limegreen')],
                 points=[PointsCollection([p.to_tuple()], color='green')]
             ))
             locate_point_scenes.append(Scene(
                 lines=deleted_set_scenes[0].lines + \
                       polygon.to_scene(triangles=False).lines + \
-                      [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-                      [LinesCollection([[v[0].point.to_tuple(), v[1].point.to_tuple()] for v in polygon.additional_diagonals],color='dodgerblue')] +\
+                      [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
+                      [LinesCollection(
+                          [[v[0].point.to_tuple(), v[1].point.to_tuple()] for v in polygon.additional_diagonals],
+                          color='dodgerblue')] + \
                       root.polygon.to_scene(triangles=False, color='green').lines,
                 points=[PointsCollection([p.to_tuple()], color='green')]
             ))
         else:
             locate_point_scenes.append(Scene(
                 lines=deleted_set_scenes[0].lines + \
-                        polygon.to_scene(triangles=False).lines + \
-                        [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
-                         [LinesCollection([[v[0].point.to_tuple(), v[1].point.to_tuple()] for v in polygon.additional_diagonals],color='dodgerblue')] +\
-                        [LinesCollection([s for s in root.to_list()], color='lightcoral')],
+                      polygon.to_scene(triangles=False).lines + \
+                      [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
+                      [LinesCollection(
+                          [[v[0].point.to_tuple(), v[1].point.to_tuple()] for v in polygon.additional_diagonals],
+                          color='dodgerblue')] + \
+                      [LinesCollection([s for s in root.to_list()], color='lightcoral')],
                 points=[PointsCollection([p.to_tuple()], color='red')]
             ))
 
         return locate_point_scenes
-
-
-
 
     loc_scenes = []
     for p in points:

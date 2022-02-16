@@ -12,15 +12,15 @@ def orientation(p, q, r, epsilon = 0):
             return 0 #"collinear"
 
 
-def compareKey1(key):
+def compare_key_points(key):
     return key.point.y
 
 
-def compareKey2(key):
+def compare_key_edges(key):
     return key[0].point.y
 
 
-def binary_searchleftmost(arr, val, left, right):
+def leftmost_binary_search(arr, val, left, right):
     if left==right:
         if arr[left][0].point.y == val:
             return left
@@ -28,6 +28,6 @@ def binary_searchleftmost(arr, val, left, right):
             return -1
     (mid) = (int)((left+right)/2)
     if arr[mid][0].point.y < val:
-        return binary_searchleftmost(arr, val, mid+1, right)
+        return leftmost_binary_search(arr, val, mid + 1, right)
     else:
-        return binary_searchleftmost(arr, val, left, mid)
+        return leftmost_binary_search(arr, val, left, mid)

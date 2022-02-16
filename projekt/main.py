@@ -1,13 +1,6 @@
-from projekt.Triangle import Triangle
-from projekt.Point import Point
-from projekt.Vertex import Vertex
-from projekt.GUI import *
-from projekt.Polygon import Polygon
-from projekt.ConvexHull import graham_scan
 from projekt.KirkpatrickAlgorithm import *
 from projekt.DrawPolygon import *
 from multiprocessing import Process
-from time import sleep
 
 
 if __name__ == "__main__":
@@ -32,12 +25,12 @@ if __name__ == "__main__":
                  [2.365801411290322, -4.776348039215687],
                  [-0.09387600806451779, -6.124387254901963]]
     """
-    tdp = DrawPolygon('test1')
-    if not tdp.exists:
-        p = Process(target=tdp.draw())
+    visualization = DrawPolygon('test1')
+    if not visualization.exists:
+        p = Process(target=visualization.draw())
         p.start()
         p.join()
-        tdp.save_changes()
-    tdp.generate_data()
-    tdp.plot = Plot(Kirkpatrick(tdp.main_polygon, tdp.points, diagonals=tdp.diagonals))
-    tdp.plot.draw()
+        visualization.save_changes()
+    visualization.generate_data()
+    visualization.plot = Plot(Kirkpatrick(visualization.main_polygon, visualization.points, diagonals=visualization.diagonals))
+    visualization.plot.draw()

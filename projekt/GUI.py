@@ -147,6 +147,7 @@ class _Button_callback(object):
         if plot_range != [(None, None), (None, None)]:
             self.ax.set_xlim(plot_range[0])
             self.ax.set_ylim(plot_range[1])
+        plt.axis('off')
         plt.draw()
 
 
@@ -210,24 +211,29 @@ class Plot:
     # wykonuje tym samym dość skomplikowaną logikę. Zauważmy, że konfigurując każdy
     # przycisk podajemy referencję na metodę obiektu _Button_callback, która
     # zostanie wykonana w momencie naciśnięcia.
-    def __configure_buttons(self):
+    def __configure_buttons(self, init_config=True):
         plt.subplots_adjust(bottom=0.2)
-        ax_prev = plt.axes([0.6, 0.05, 0.15, 0.075])
-        ax_next = plt.axes([0.76, 0.05, 0.15, 0.075])
-        ax_add_point = plt.axes([0.44, 0.05, 0.15, 0.075])
-        ax_add_line = plt.axes([0.28, 0.05, 0.15, 0.075])
-        ax_add_rect = plt.axes([0.12, 0.05, 0.15, 0.075])
-        b_next = Button(ax_next, 'Następny')
-        b_next.on_clicked(self.callback.next)
-        b_prev = Button(ax_prev, 'Poprzedni')
-        b_prev.on_clicked(self.callback.prev)
-        b_add_point = Button(ax_add_point, 'Dodaj punkt')
-        b_add_point.on_clicked(self.callback.add_point)
-        b_add_line = Button(ax_add_line, 'Dodaj linię')
-        b_add_line.on_clicked(self.callback.add_line)
-        b_add_rect = Button(ax_add_rect, 'Dodaj figurę')
-        b_add_rect.on_clicked(self.callback.add_rect)
-        return [b_prev, b_next, b_add_point, b_add_line, b_add_rect]
+        if init_config:
+            ax_add_point = plt.axes([0.44, 0.05, 0.15, 0.075])
+            ax_add_line = plt.axes([0.28, 0.05, 0.15, 0.075])
+            ax_add_rect = plt.axes([0.12, 0.05, 0.15, 0.075])
+
+            b_add_point = Button(ax_add_point, 'Dodaj punkt')
+            b_add_point.on_clicked(self.callback.add_point)
+            b_add_line = Button(ax_add_line, 'Dodaj linię')
+            b_add_line.on_clicked(self.callback.add_line)
+            b_add_rect = Button(ax_add_rect, 'Dodaj figurę')
+            b_add_rect.on_clicked(self.callback.add_rect)
+            return [b_add_point, b_add_line, b_add_rect]
+        else:
+            ax_prev = plt.axes([0.6, 0.05, 0.15, 0.075])
+            ax_next = plt.axes([0.76, 0.05, 0.15, 0.075])
+
+            b_next = Button(ax_next, 'Następny')
+            b_next.on_clicked(self.callback.next)
+            b_prev = Button(ax_prev, 'Poprzedni')
+            b_prev.on_clicked(self.callback.prev)
+            return [b_prev, b_next]
 
     def add_scene(self, scene):
         self.scenes.append(scene)
@@ -281,7 +287,10 @@ class Plot:
         ax = plt.axes(autoscale_on=False)
         self.callback.set_axes(ax)
         fig.canvas.mpl_connect('button_press_event', self.callback.on_click)
+        fig.canvas.set_window_title('kirkpatrick algorithm visualization')
+        plt.axis('off')
         plt.show()
+        print("xd")
         self.callback.draw(autoscaling=autoscaling, plot_range=plot_range)
 
 
