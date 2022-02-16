@@ -32,7 +32,7 @@ if __name__ == "__main__":
                  [2.365801411290322, -4.776348039215687],
                  [-0.09387600806451779, -6.124387254901963]]
     """
-    tdp = DrawPolygon('test15')
+    tdp = DrawPolygon('test1')
     if not tdp.exists:
         p = Process(target=tdp.draw())
         p.start()

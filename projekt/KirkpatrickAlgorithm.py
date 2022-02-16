@@ -3,21 +3,22 @@ from projekt.ConvexHull import *
 from projekt.GUI import *
 from projekt.Side import Side
 
-def ch_triangle(ch_vertices, delta = 1):
-    first_p = ch_vertices[0].point
-    min_y = first_p.y
-    max_y = first_p.y
-    min_x = first_p.x
-    max_x = first_p.x
-
-    for v in ch_vertices:
-        min_y = min(min_y, v.point.y)
-        max_y = max(max_y, v.point.y)
-        min_x = min(min_x, v.point.x)
-        max_x = max(max_x, v.point.x)
-
-    a = max(max_y-min_y, max_x - min_x)
-    tr = [(min_x - a/2.0 - delta, min_y - delta/2.0 - 0.0001), (min_x + a/2.0, min_y + 2.0 * a + delta), (min_x + 3.0*a/2.0 + delta, min_y - delta/2.0)]
+def ch_triangle(ch_vertices, delta = 0.3):
+    # first_p = ch_vertices[0].point
+    # min_y = first_p.y
+    # max_y = first_p.y
+    # min_x = first_p.x
+    # max_x = first_p.x
+    #
+    # for v in ch_vertices:
+    #     min_y = min(min_y, v.point.y)
+    #     max_y = max(max_y, v.point.y)
+    #     min_x = min(min_x, v.point.x)
+    #     max_x = max(max_x, v.point.x)
+    #
+    # a = max(max_y-min_y, max_x - min_x)
+    # tr = [(min_x - a/1.05 - delta, min_y - delta/1.05 - 0.0001), (min_x + a/1.05, min_y + 1.05 * a + delta), (min_x + 3.0*a/1.05 + delta, min_y - delta/1.05)]
+    tr = [(-10, -6),  (0, -6 + 10 * sqrt(3)), (10, -6)]
     triangle = Triangle(Vertex(Point(tr[0][0], tr[0][1])),
                         Vertex(Point(tr[1][0], tr[1][1])),
                         Vertex(Point(tr[2][0], tr[2][1])))
@@ -205,7 +206,8 @@ def Kirkpatrick(polygon, points, diagonals = None):
     kirkpatrick_scenes.append(Scene(
         points=[PointsCollection([v.point.to_tuple() for v in vertices])],
         lines=[LinesCollection([s for v in vertices for vt in v.triangles for s in vt.to_list()], color = 'dodgerblue')] + \
-              [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
+              [LinesCollection([[(-10, -6), (10, -6)], [(10, -6), (0, -6 + 10 * sqrt(3))], [(0, -6 + 10 * sqrt(3)), (-10, -6)]], color = 'navy')] + \
+              # [LinesCollection([s for s in bt['triangle'].to_list()], color='navy')] + \
               [LinesCollection([s for ptr in polygons[-1].triangles for s in ptr.to_list()], color='mistyrose')] + \
               [LinesCollection([s for s in polygon.sides], color='red')] +\
               [LinesCollection([[v[0].point.to_tuple(), v[1].point.to_tuple()] for v in polygon.additional_diagonals], color = 'red')]
