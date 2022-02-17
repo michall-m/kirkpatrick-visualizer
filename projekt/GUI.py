@@ -1,11 +1,10 @@
 # Narzędzie jest oparte o kilka zewnętrznych bibliotek, które potrzebujemy najpierw zaimportować.
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.collections as mcoll
-
-import matplotlib.colors as mcolors
-from matplotlib.widgets import Button
 import json as js
+
+import matplotlib.collections as mcoll
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.widgets import Button
 
 # Parametr określający jak blisko (w odsetku całego widocznego zakresu) punktu początkowego
 # wielokąta musimy kliknąć, aby go zamknąć.
@@ -35,12 +34,15 @@ class _Button_callback(object):
     # Metoda ta obsługuje logikę przejścia do następnej sceny.
     def next(self, event):
         self.i = (self.i + 1) % len(self.scenes)
-        self.draw(autoscaling=True)
+        self.draw()
 
     # Metoda ta obsługuje logikę powrotu do poprzedniej sceny.
     def prev(self, event):
         self.i = (self.i - 1) % len(self.scenes)
-        self.draw(autoscaling=True)
+        self.draw()
+
+    def finish(self, event):
+        plt.close()
 
     # Metoda ta aktywuje funkcję rysowania punktów wyłączając równocześnie rysowanie
     # odcinków i wielokątów.
@@ -50,7 +52,7 @@ class _Button_callback(object):
         if self.adding_points:
             self.adding_lines = False
             self.adding_rects = False
-            self.added_points.append(PointsCollection([]))
+            self.added_points.append(PointsCollection([], color='red'))
 
     # Metoda ta aktywuje funkcję rysowania odcinków wyłączając równocześnie
     # rysowanie punktów i wielokątów.
@@ -60,7 +62,7 @@ class _Button_callback(object):
         if self.adding_lines:
             self.adding_points = False
             self.adding_rects = False
-            self.added_lines.append(LinesCollection([]))
+            self.added_lines.append(LinesCollection([], color='dodgerblue'))
 
     # Metoda ta aktywuje funkcję rysowania wielokątów wyłączając równocześnie
     # rysowanie punktów i odcinków.
@@ -73,7 +75,7 @@ class _Button_callback(object):
             self.new_rect()
 
     def new_rect(self):
-        self.added_rects.append(LinesCollection([]))
+        self.added_rects.append(LinesCollection([], color='green'))
         self.rect_points = []
 
     # Metoda odpowiedzialna za właściwą logikę rysowania nowych elementów. W
@@ -88,12 +90,12 @@ class _Button_callback(object):
         new_point = (event.xdata, event.ydata)
         if self.adding_points:
             self.added_points[-1].add_points([new_point])
-            self.draw(autoscaling=False)
+            self.draw()
         elif self.adding_lines:
             if self.new_line_point is not None:
                 self.added_lines[-1].add([self.new_line_point, new_point])
                 self.new_line_point = None
-                self.draw(autoscaling=False)
+                self.draw()
             else:
                 self.new_line_point = new_point
         elif self.adding_rects:
@@ -102,7 +104,7 @@ class _Button_callback(object):
             elif len(self.rect_points) == 1:
                 self.added_rects[-1].add([self.rect_points[-1], new_point])
                 self.rect_points.append(new_point)
-                self.draw(autoscaling=False)
+                self.draw()
             elif len(self.rect_points) > 1:
                 if dist(self.rect_points[0], new_point) < (
                         np.mean([self.ax.get_xlim(), self.ax.get_ylim()]) * TOLERANCE):
@@ -111,7 +113,7 @@ class _Button_callback(object):
                 else:
                     self.added_rects[-1].add([self.rect_points[-1], new_point])
                     self.rect_points.append(new_point)
-                self.draw(autoscaling=False)
+                self.draw()
 
     # Metoda odpowiedzialna za narysowanie całego wykresu. Warto zauważyć,
     # że zaczyna się ona od wyczyszczenia jego wcześniejszego stanu. Istnieje w
@@ -119,15 +121,16 @@ class _Button_callback(object):
     # od ustawionego parametru autoscaling, uniknąć sytuacji, kiedy dodawanie
     # nowych punktów przy brzegu obecnie widzianego zakresu powoduje niekorzystne
     # przeskalowanie.
-    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)], init_draw=False):
+    def draw(self, init_draw=False):
         self.ax.clear()
         for collection in (self.scenes[self.i].points + self.added_points):
             if len(collection.points) > 0:
                 self.ax.scatter(*zip(*(np.array(collection.points))), **collection.kwargs)
         for collection in (self.scenes[self.i].lines + self.added_lines + self.added_rects):
             self.ax.add_collection(collection.get_collection())
-        self.ax.autoscale(autoscaling)
-        #plt.axis('off')
+        plt.xlim([-10.2, 10.2])
+        plt.ylim([-6.2, 11.9])
+        plt.axis('off')
         if not init_draw:
             plt.draw()
 
@@ -195,24 +198,27 @@ class Plot:
     def __configure_buttons(self, init_config=False):
         plt.subplots_adjust(bottom=0.2)
         if init_config:
-            ax_add_point = plt.axes([0.44, 0.05, 0.15, 0.075])
-            ax_add_line = plt.axes([0.28, 0.05, 0.15, 0.075])
-            ax_add_rect = plt.axes([0.12, 0.05, 0.15, 0.075])
+            ax_finish = plt.axes([0.72, 0.05, 0.19, 0.075])
+            ax_add_point = plt.axes([0.52, 0.05, 0.19, 0.075])
+            ax_add_line = plt.axes([0.32, 0.05, 0.19, 0.075])
+            ax_add_rect = plt.axes([0.12, 0.05, 0.19, 0.075])
 
-            b_add_point = Button(ax_add_point, 'Dodaj punkt')
+            b_finish = Button(ax_finish, 'DONE')
+            b_finish.on_clicked(self.callback.finish)
+            b_add_point = Button(ax_add_point, 'ADD POINT')
             b_add_point.on_clicked(self.callback.add_point)
-            b_add_line = Button(ax_add_line, 'Dodaj linię')
+            b_add_line = Button(ax_add_line, 'ADD EDGE')
             b_add_line.on_clicked(self.callback.add_line)
-            b_add_rect = Button(ax_add_rect, 'Dodaj figurę')
+            b_add_rect = Button(ax_add_rect, 'ADD POLYGON')
             b_add_rect.on_clicked(self.callback.add_rect)
-            return [b_add_point, b_add_line, b_add_rect]
+            return [b_finish, b_add_point, b_add_line, b_add_rect]
         else:
-            ax_prev = plt.axes([0.6, 0.05, 0.15, 0.075])
-            ax_next = plt.axes([0.76, 0.05, 0.15, 0.075])
+            ax_prev = plt.axes([0.12, 0.05, 0.38, 0.075])
+            ax_next = plt.axes([0.51, 0.05, 0.38, 0.075])
 
-            b_next = Button(ax_next, 'Następny')
+            b_next = Button(ax_next, 'NEXT SCENE')
             b_next.on_clicked(self.callback.next)
-            b_prev = Button(ax_prev, 'Poprzedni')
+            b_prev = Button(ax_prev, 'PREVIOUS SCENE')
             b_prev.on_clicked(self.callback.prev)
             return [b_prev, b_next]
 
@@ -264,20 +270,13 @@ class Plot:
         plt.close()
         fig = plt.figure()
         self.callback = _Button_callback(self.scenes)
-        self.widgets = self.__configure_buttons(init_config=init_config) #kwargs
-        ax = plt.axes(autoscale_on=True)
+        self.widgets = self.__configure_buttons(init_config=init_config)  # kwargs
+        ax = plt.axes()
         self.callback.set_axes(ax)
         fig.canvas.mpl_connect('button_press_event', self.callback.on_click)
-        fig.canvas.set_window_title('kirkpatrick algorithm visualization')
-        # plt.axis('off')
-        # plt.xlim([-10.1, 10.1])
-        # plt.ylim([-6, 11.8])
-        self.callback.draw(autoscaling=False, plot_range=plot_range)
+        fig.canvas.set_window_title('KIRKPATRICK ALGORITHM VISUALIZATION')
+        plt.axis('off')
+        plt.xlim([-10.2, 10.2])
+        plt.ylim([-6.2, 11.9])
+        self.callback.draw()
         plt.show()
-        self.callback.draw(autoscaling=False, plot_range=plot_range)
-
-
-
-
-
-

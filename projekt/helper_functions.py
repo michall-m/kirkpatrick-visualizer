@@ -12,12 +12,7 @@ def orientation(p, q, r, epsilon = 0):
             return 0 #"collinear"
 
 
-def compare_key_points(key):
-    return key.point.y
 
-
-def compare_key_edges(key):
-    return key[0].point.y
 
 
 def leftmost_binary_search(arr, val, left, right):

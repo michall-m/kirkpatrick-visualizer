@@ -1,7 +1,7 @@
 import time
 
-from projekt.KirkpatrickAlgorithm import *
-from projekt.DrawPolygon import *
+from projekt.kirkpatrick_algorithm import *
+from projekt.draw_polygon import *
 from multiprocessing import Process
 
 
