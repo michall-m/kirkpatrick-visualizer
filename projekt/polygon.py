@@ -14,6 +14,7 @@ class Polygon:
         self.triangles = set()
         self.chain = self.__get_chain()
         self.scenes = []
+        self.scene = None #todo del
         self.classification_scene = None
         self.sides = []
         self.__is_triangulated = False
@@ -24,6 +25,18 @@ class Polygon:
             self.sides.append([(self.vertices[i].point.x, self.vertices[i].point.y),
                                (self.vertices[(i + 1) % len(self.vertices)].point.x,
                                 self.vertices[(i + 1) % len(self.vertices)].point.y)])
+
+
+    def __key(self):
+        return tuple(self.vertices)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return self.__key() == other.__key()
+        return False
 
     def __sorted_vertices(self, vertices):
         index = 0
