@@ -303,7 +303,7 @@ def Kirkpatrick(polygon, points, diagonals=None):
                 lines=deleted_set_scenes[0].lines + \
                       root.polygon.to_scene(triangles=False).lines + \
                       [LinesCollection([s for s in border_triangle.to_list()], color='navy')] + \
-                      [LinesCollection([s for s in root.to_list()], color='limegreen')],
+                      [LinesCollection([s for s in root.to_list()], color='forestgreen')],
                 points=[PointsCollection([p.to_tuple()], color='green')]
             ))
             locate_point_scenes.append(Scene(

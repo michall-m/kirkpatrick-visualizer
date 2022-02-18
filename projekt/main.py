@@ -27,7 +27,7 @@ if __name__ == "__main__":
                  [2.365801411290322, -4.776348039215687],
                  [-0.09387600806451779, -6.124387254901963]]
     """
-    visualization = DrawPolygon('test1')
+    visualization = DrawPolygon('test2')
     if not visualization.exists:
         p = Process(target=visualization.draw(init_config=True))
         p.start()

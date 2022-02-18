@@ -7,4 +7,6 @@ Zbiór w tester.py:
 
 <img src="https://i.imgur.com/fNaIuZP.png">
 
+![] test_data.png
 
+![](./drawing.gif)
