@@ -9,6 +9,8 @@ from matplotlib.widgets import Button
 # Parametr określający jak blisko (w odsetku całego widocznego zakresu) punktu początkowego
 # wielokąta musimy kliknąć, aby go zamknąć.
 TOLERANCE = 0.15
+XLIM = [-10.2, 10.2]
+YLIM = [-6.2, 11.9]
 
 
 def dist(point1, point2):
@@ -125,11 +127,11 @@ class _Button_callback(object):
         self.ax.clear()
         for collection in (self.scenes[self.i].points + self.added_points):
             if len(collection.points) > 0:
-                self.ax.scatter(*zip(*(np.array(collection.points))), **collection.kwargs)
+                self.ax.scatter(*zip(*(np.array(collection.points))), **collection.kwargs, zorder=10)
         for collection in (self.scenes[self.i].lines + self.added_lines + self.added_rects):
             self.ax.add_collection(collection.get_collection())
-        plt.xlim([-10.2, 10.2])
-        plt.ylim([-6.2, 11.9])
+        plt.xlim(XLIM)
+        plt.ylim(YLIM)
         plt.axis('off')
         if not init_draw:
             plt.draw()
@@ -230,7 +232,7 @@ class Plot:
 
     # Metoda toJson() odpowiada za zapisanie stanu obiektu do ciągu znaków w
     # formacie JSON.
-    def toJson(self):
+    def to_json(self):
         return js.dumps([{"points": [np.array(pointCol.points).tolist() for pointCol in scene.points],
                           "lines": [linesCol.lines for linesCol in scene.lines]}
                          for scene in self.scenes])
@@ -266,9 +268,9 @@ class Plot:
             return None
 
     # Główna metoda inicjalizująca wyświetlanie wykresu.
-    def draw(self, autoscaling=True, plot_range=[(None, None), (None, None)], init_config=False):
+    def draw(self, init_config=False):
         plt.close()
-        fig = plt.figure()
+        fig = plt.figure(figsize=(6, 4.5), dpi=200)
         self.callback = _Button_callback(self.scenes)
         self.widgets = self.__configure_buttons(init_config=init_config)  # kwargs
         ax = plt.axes()

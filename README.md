@@ -8,5 +8,3 @@ Zbiór w tester.py:
 <img src="https://i.imgur.com/fNaIuZP.png">
 
 
-
-

@@ -35,4 +35,11 @@ if __name__ == "__main__":
         visualization.save_changes()
     visualization.generate_data()
     visualization.plot = Plot(Kirkpatrick(visualization.main_polygon, visualization.points, diagonals=visualization.diagonals))
-    visualization.plot.draw()
+    # visualization.plot.draw()
+    p1 = Process(target=visualization.draw())
+    p2 = Process(target=visualization.draw())
+    p1.start()
+
+    p2.start()
+
+
