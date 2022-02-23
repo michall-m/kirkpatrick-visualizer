@@ -270,7 +270,7 @@ class Plot:
     # Główna metoda inicjalizująca wyświetlanie wykresu.
     def draw(self, init_config=False):
         plt.close()
-        fig = plt.figure(figsize=(6, 4.5), dpi=200)
+        fig = plt.figure(figsize=(6, 4.5), dpi=120)
         self.callback = _Button_callback(self.scenes)
         self.widgets = self.__configure_buttons(init_config=init_config)  # kwargs
         ax = plt.axes()

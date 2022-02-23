@@ -9,4 +9,4 @@ Zbiór w tester.py:
 
 ![] test_data.png
 
-![](./drawing.gif)
+![](./vertices_deleting.gif)
