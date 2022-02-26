@@ -1,7 +1,7 @@
 from visualizer import Visualizer
 
 if __name__ == "__main__":
-    visualizer = Visualizer('polygon')
+    visualizer = Visualizer('test1')
     visualizer.run()
 
 
