@@ -76,7 +76,7 @@ There are 5 types of vertices in various colors:
 
 
 <p align="center">
-  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/vertex_types.png?token=GHSAT0AAAAAABRUYPOEPN7K6K4PPF26376EYQ3RYRA">
+  <img width="600" height="480" src="vertex_types.png">
 </p>
 
 <br />
