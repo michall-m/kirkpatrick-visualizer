@@ -48,7 +48,7 @@ python main.py <polygon_name>
 Draw polygon, split it by edges and add some points to locate.
 
 <p align="center">
-  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/drawing.gif?token=GHSAT0AAAAAABRUYPOFFQZGWUGF2JE4FF2MYQ3RVTA">
+  <img width="600" height="480" src="drawing.gif">
 </p>
 
 <br />
@@ -90,8 +90,9 @@ After it's deletion, newly created polygon is triangulated and those triangles a
 
 
 <p align="center">
-  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/vertices_deleting.gif?token=GHSAT0AAAAAABRUYPOFKWLVXDK7COYUIRFSYQ3RY7Q">
+  <img width="600" height="480" src="vertices_deleting.gif">
 </p>
+
 
 
 <br />
@@ -100,11 +101,12 @@ After it's deletion, newly created polygon is triangulated and those triangles a
 <span style="color:yellow;">Yellow</span> means currently processed triangle, if it's correct it changes to <span style="color:green;">green</span>. 
 
 <p align="center">
-  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/first_point_locating.gif?token=GHSAT0AAAAAABRUYPOFHAKS43P7H7YNIJPMYQ3R2VA">
+  <img width="600" height="480" src="first_point_locating.gif">
 </p>
 
+
 <p align="center">
-  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/second_point_locating.gif?token=GHSAT0AAAAAABRUYPOF3R2VJXXKYP2ASD2AYQ3R26A">
+  <img width="600" height="480" src="second_point_locating.gif">
 </p>
 
 
