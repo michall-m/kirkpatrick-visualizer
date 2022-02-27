@@ -1,3 +1,5 @@
+
+
 # Point location visualizer
 
 Kirkpatrick's Algorithm visualizer for log(n) point location in given planar subdivision based on triangulation refinement.
@@ -35,17 +37,22 @@ git clone https://github.com/michall-m/kirkpatrick-visuzalizer.git
 
 ### Executing program
 
-```commandline
+```
 python main.py <name>
 ```
 
+<br />
 
 ### Drawing
 Draw polygon, split it by edges and add some points to locate.
 
-![drawing](./drawing.gif)
+<p align="center">
+  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/drawing.gif?token=GHSAT0AAAAAABRUYPOFFQZGWUGF2JE4FF2MYQ3RVTA">
+</p>
 
-### Vertices types
+<br />
+
+### Vertex types
 There are 5 types of vertices in various colors:
 
 
@@ -65,7 +72,14 @@ There are 5 types of vertices in various colors:
  regular - otherwise
 
 
-![types](./vertices_types.png)
+
+ ![types](./vertex_types.png?style=centerme) 
+
+<p align="center">
+  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/drawing.gif?token=GHSAT0AAAAAABRUYPOFFQZGWUGF2JE4FF2MYQ3RVTA">
+</p>
+
+<br />
 
 
 ### Kirkpatrick's triangulation refinement method
@@ -75,19 +89,23 @@ After it's deletion, newly created polygon is triangulated and those triangles a
 
 ![refinement](./vertices_deleting.gif)
 
+<br />
 
 ### Point locating
 <span style="color:yellow;">Yellow</span> means currently processed triangle, if it's correct it changes to <span style="color:green;">green</span>. 
 
 
-![first_point](./first_point_locating.gif)
+![first_point](./first_point_locating.gif?style=centerme)
 
 ![second_point](./second_point_locating.gif)
 
 
 
 
+<br />
 
 ## Acknowledgments
 
 * [Kirkpatrick's point location](http://cgm.cs.mcgill.ca/~athens/cs507/Projects/2002/PaulSandulescu/)
+
+
