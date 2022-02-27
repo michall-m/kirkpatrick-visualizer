@@ -1,4 +1,4 @@
-from projekt.point import Point
+from point import Point
 
 
 class Vertex:

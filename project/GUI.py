@@ -276,7 +276,7 @@ class Plot:
         ax = plt.axes()
         self.callback.set_axes(ax)
         fig.canvas.mpl_connect('button_press_event', self.callback.on_click)
-        fig.canvas.set_window_title('KIRKPATRICK ALGORITHM VISUALIZATION')
+        fig.canvas.set_window_title("KIRKPATRICK'S ALGORITHM VISUALIZER")
         plt.axis('off')
         plt.xlim([-10.2, 10.2])
         plt.ylim([-6.2, 11.9])

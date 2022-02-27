@@ -1,4 +1,4 @@
-from projekt.vertex import Vertex
+from project.vertex import Vertex
 
 
 class Sweepline:

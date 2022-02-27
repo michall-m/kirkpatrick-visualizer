@@ -1,6 +1,6 @@
-from projekt.point import Point
-from projekt.side import Side
-from projekt.vertex import Vertex
+from point import Point
+from side import Side
+from vertex import Vertex
 
 
 class Triangle:

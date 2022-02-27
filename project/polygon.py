@@ -1,6 +1,6 @@
-from projekt.GUI import *
-from projekt.helper_functions import *
-from projekt.triangle import *
+from GUI import *
+from helper_functions import *
+from triangle import *
 from math import sqrt
 
 border_triangle_vertices_coords = [(-10, -6), (0, -6 + 10 * sqrt(3)), (10, -6)]

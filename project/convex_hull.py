@@ -1,5 +1,5 @@
 from functools import cmp_to_key
-from projekt.point import Point
+from point import Point
 
 
 

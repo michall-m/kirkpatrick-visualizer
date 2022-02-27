@@ -38,8 +38,9 @@ git clone https://github.com/michall-m/kirkpatrick-visuzalizer.git
 ### Executing program
 
 ```
-python main.py <name>
+python main.py <polygon_name>
 ```
+
 
 <br />
 
@@ -57,26 +58,25 @@ There are 5 types of vertices in various colors:
 
 
 ![#32CD32](https://via.placeholder.com/11/32CD32/000000?text=+) 
- start -   both neighbours are below and interior angle is less than π,
+ **start** -   both neighbours are below and interior angle is less than π,
 
 ![#f03c15](https://via.placeholder.com/11/f03c15/000000?text=+)
- end -     both neighbours are above and interior angle is less than π,
+ **end** -     both neighbours are above and interior angle is less than π,
 
 ![#0000FF](https://via.placeholder.com/11/0000FF/000000?text=+)
- merge -   both neighbours are above and interior angle is greater than π,
+ **merge** -   both neighbours are above and interior angle is greater than π,
 
 ![#B0C4DE](https://via.placeholder.com/11/B0C4DE/000000?text=+)
- split -   both neighbours are below and interior angle is greater than π,
+ **split** -   both neighbours are below and interior angle is greater than π,
 
 ![#A0522D](https://via.placeholder.com/11/A0522D/000000?text=+) 
- regular - otherwise
+ **regular** - otherwise
 
 
 
- ![types](./vertex_types.png?style=centerme) 
 
 <p align="center">
-  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/drawing.gif?token=GHSAT0AAAAAABRUYPOFFQZGWUGF2JE4FF2MYQ3RVTA">
+  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/vertex_types.png?token=GHSAT0AAAAAABRUYPOEPN7K6K4PPF26376EYQ3RYRA">
 </p>
 
 <br />
@@ -87,17 +87,26 @@ Vertex selected to be deleted is marked as <span style="color:red;">red</span>, 
 After it's deletion, newly created polygon is triangulated and those triangles are marked as
 <span style="color:green;">green</span>.
 
-![refinement](./vertices_deleting.gif)
+
+
+<p align="center">
+  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/vertices_deleting.gif?token=GHSAT0AAAAAABRUYPOFKWLVXDK7COYUIRFSYQ3RY7Q">
+</p>
+
 
 <br />
 
 ### Point locating
 <span style="color:yellow;">Yellow</span> means currently processed triangle, if it's correct it changes to <span style="color:green;">green</span>. 
 
+<p align="center">
+  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/first_point_locating.gif?token=GHSAT0AAAAAABRUYPOFHAKS43P7H7YNIJPMYQ3R2VA">
+</p>
 
-![first_point](./first_point_locating.gif?style=centerme)
+<p align="center">
+  <img width="600" height="480" src="https://raw.githubusercontent.com/michall-m/kirkpatrick-visuzalizer/main/second_point_locating.gif?token=GHSAT0AAAAAABRUYPOF3R2VJXXKYP2ASD2AYQ3R26A">
+</p>
 
-![second_point](./second_point_locating.gif)
 
 
 

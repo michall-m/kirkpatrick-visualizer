@@ -1,9 +1,9 @@
-from projekt.GUI import *
+from GUI import *
 import os
-from projekt.point import Point
-from projekt.polygon import Polygon
-from projekt.vertex import Vertex
-from projekt.polygon import border_triangle_vertices_coords
+from point import Point
+from polygon import Polygon
+from vertex import Vertex
+from polygon import border_triangle_vertices_coords
 
 
 

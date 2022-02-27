@@ -1,5 +1,5 @@
-from projekt.point import Point
-from projekt.vertex import Vertex
+from point import Point
+from vertex import Vertex
 
 
 class Side:

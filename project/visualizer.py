@@ -1,5 +1,5 @@
-from projekt.kirkpatrick_algorithm import *
-from projekt.draw_polygon import *
+from kirkpatrick_algorithm import *
+from draw_polygon import *
 
 
 class Visualizer:

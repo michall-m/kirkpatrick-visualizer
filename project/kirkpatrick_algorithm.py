@@ -1,9 +1,11 @@
-from projekt import *
-from projekt.GUI import LinesCollection, PointsCollection
-from projekt.convex_hull import *
-from projekt.GUI import *
-from projekt.side import Side
+from GUI import LinesCollection, PointsCollection
+from convex_hull import *
+from GUI import *
+from vertex import *
+from side import Side
 from polygon import border_triangle_vertices_coords
+from triangle import Triangle
+from polygon import Polygon
 
 
 
