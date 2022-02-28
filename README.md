@@ -10,7 +10,7 @@ Kirkpatrick's algorithm visualizer for log(n) point location in a given planar K
 also termed triangulation refinement method. It consists of triangulating newly created polygon (by currently the lowest
 degree vertex deletion) till we delete all the vertices. Given subdivision (set of polygons) is enclosed by a triangle.
 We create a triangulation tree where the root is the triangle that encloses a given subdivision. Each node's children
-have overlapped triangles of the previous triangulation. The leaves of the tree are triangles composing initial
+are overlapping triangles of the previous triangulation. The leaves of the tree are triangles composing initial
 triangulation. This way, we can easily locate given points in log(n) time complexity.
 
 ## Installation
