@@ -6,12 +6,11 @@ Kirkpatrick's Algorithm visualizer for log(n) point location in a given planar s
 
 ## Kirkpatrick's algorithm description
 
-Kirkpatrick's algorithm visualizer for log(n) point location in a given planar Kirkpatrick's algorithm for point location,
-also termed triangulation refinement method. It consists of triangulating newly created polygon (by currently the lowest
-degree vertex deletion) till we delete all the vertices. Given subdivision (set of polygons) is enclosed by a triangle.
-We create a triangulation tree where the root is the triangle that encloses a given subdivision. Each node's children
-are overlapping triangles of the previous triangulation. The leaves of the tree are triangles composing initial
-triangulation. This way, we can easily locate given points in log(n) time complexity.
+Kirkpatrick's algorithm for point location is also termed triangulation refinement method. It consists of triangulating 
+newly created polygon (by currently the lowest degree vertex deletion) till we delete all the vertices. Given subdivision
+(set of polygons) is enclosed by a triangle. We create a triangulation tree where the root is the triangle that encloses
+a given subdivision. Each node's children are overlapping triangles of the previous triangulation. The leaves of the tree
+are triangles composing initial triangulation. This way, we can easily locate given points in log(n) time complexity.
 
 ## Installation
 This program uses the following python modules:
@@ -29,7 +28,7 @@ pip install numpy
 Clone this repository:
 
 ```
-git clone https://github.com/michall-m/kirkpatrick-visuzalizer.git
+git clone https://github.com/michall-m/kirkpatrick-visualizer.git
 ```
 
 ## Running visualizer
@@ -44,7 +43,7 @@ python main.py <polygon_name>
 <br />
 
 ### Drawing
-Draw a polygon, split it by the edges and add some points to locate.
+The initial state is set by drawing a polygon, dividing it with edges and adding points to locate.
 
 <p align="center">
   <img width="600" height="480" src="drawing.gif">
@@ -83,8 +82,8 @@ There are 5 types of vertices in various colors:
 
 ### Kirkpatrick's triangulation refinement method
 
-Vertex selected to be deleted is marked as `#ffffff`<span style="color:red;">red</span>, as well as all the triangles containing it.
-After it's deletion, newly created subdivision is retriangulated and those triangles are marked as
+Vertex selected to be deleted is marked as <span style="color:red;">red</span>, as well as all the triangles containing it.
+After its deletion, newly created subdivision is retriangulated and those triangles are marked as
 <span style="color:green;">green</span>.
 
 
@@ -98,7 +97,7 @@ After it's deletion, newly created subdivision is retriangulated and those trian
 <br />
 
 ### Point locating
-<span style="color:yellow;">Yellow</span> means currently processed triangle, if it's correct it changes to <span style="color:green;">green</span>. 
+Yellow indicates the triangle currently being processed, if it is correct it turns green.
 
 <p align="center">
   <img width="600" height="480" src="first_point_locating.gif">
