@@ -55,19 +55,19 @@ The initial state is set by drawing a polygon, dividing it with edges and adding
 There are 5 types of vertices in various colors:
 
 
-<img src="vertex-colors/start.png">
- **start** -   both neighbours are below and interior angle is less than π,
+!<img src="vertex-colors/start.png">
+**start** -   both neighbours are below and interior angle is less than π,
 
-![#f03c15](https://via.placeholder.com/11/f03c15/000000?text=+)
+!<img src="vertex-colors/end.png">
  **end** -     both neighbours are above and interior angle is less than π,
 
-![#0000FF](https://via.placeholder.com/11/0000FF/000000?text=+)
+!<img src="vertex-colors/merge.png">
  **merge** -   both neighbours are above and interior angle is greater than π,
 
-![#B0C4DE](https://via.placeholder.com/11/B0C4DE/000000?text=+)
+!<img src="vertex-colors/split.png">
  **split** -   both neighbours are below and interior angle is greater than π,
 
-![#A0522D](https://via.placeholder.com/11/A0522D/000000?text=+) 
+!<img src="vertex-colors/regular.png">
  **regular** - otherwise
 
 
