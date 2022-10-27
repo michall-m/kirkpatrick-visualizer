@@ -55,7 +55,7 @@ The initial state is set by drawing a polygon, dividing it with edges and adding
 There are 5 types of vertices in various colors:
 
 
-![#32CD32](https://via.placeholder.com/11/32CD32/000000?text=+) 
+<img src="vertex-colors/start.png">
  **start** -   both neighbours are below and interior angle is less than π,
 
 ![#f03c15](https://via.placeholder.com/11/f03c15/000000?text=+)
